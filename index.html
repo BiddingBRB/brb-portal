@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRB Bidding Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f6fa;--bg2:#ffffff;--bg3:#f0f1f6;
+  --border:#e2e5ed;--border2:#c8ccd8;
+  --gold:#b8821e;--gold2:#d4941f;--gold-bg:#fdf3e0;--gold-border:#f0d080;
+  --teal:#0e9e7a;--teal-bg:#e8f7f3;
+  --red:#d63d3d;--red-bg:#fdeaea;
+  --blue:#2563eb;--blue-bg:#eff6ff;
+  --text:#1a1d2e;--text2:#4b5270;--text3:#9298b0;
+  --font:'IBM Plex Sans Thai',sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+  --sidebar:210px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 8px rgba(0,0,0,.04);
+  --shadow-md:0 4px 16px rgba(0,0,0,.10);
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex;font-size:13px}
+
+/* ─── LOGIN ─── */
+#login{
+  position:fixed;inset:0;z-index:100;
+  background:linear-gradient(135deg,#f0f4ff 0%,#fdf6e8 100%);
+  display:flex;align-items:center;justify-content:center;
+}
+.lcard{
+  width:380px;background:var(--bg2);
+  border:1px solid var(--border);border-radius:20px;
+  padding:40px 36px;
+  box-shadow:var(--shadow-md);
+  animation:fadeUp .45s ease both;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.lbrand{
+  width:52px;height:52px;margin:0 auto 14px;
+  background:linear-gradient(135deg,#e8b84b,#b07820);
+  border-radius:14px;display:flex;align-items:center;justify-content:center;
+  font-size:22px;font-weight:700;color:#fff;font-family:var(--mono);
+  box-shadow:0 4px 12px rgba(200,151,58,.35);
+}
+.ltitle{text-align:center;font-size:18px;font-weight:600;color:var(--text);margin-bottom:4px}
+.lsub{text-align:center;font-size:12px;color:var(--text3);margin-bottom:28px}
+.lroles{display:flex;gap:6px;background:var(--bg3);padding:4px;border-radius:10px;margin-bottom:22px}
+.lrole{
+  flex:1;padding:8px 4px;border-radius:7px;border:none;background:none;
+  font-family:var(--font);font-size:11px;color:var(--text3);cursor:pointer;transition:all .15s;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+}
+.lrole .ri{font-size:16px}
+.lrole.active{background:var(--bg2);color:var(--gold);border:1px solid var(--gold-border);box-shadow:var(--shadow)}
+.lfield{margin-bottom:14px}
+.llabel{font-size:10px;color:var(--text3);letter-spacing:.6px;text-transform:uppercase;margin-bottom:5px;display:block}
+.linput{
+  width:100%;background:var(--bg3);border:1.5px solid var(--border);
+  border-radius:9px;padding:10px 13px;color:var(--text);
+  font-size:13px;font-family:var(--font);outline:none;transition:border-color .15s;
+}
+.linput:focus{border-color:var(--gold2);background:var(--bg2)}
+.lbtn{
+  width:100%;padding:12px;
+  background:linear-gradient(135deg,#e8b84b,#b07820);
+  color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;
+  cursor:pointer;font-family:var(--font);margin-top:6px;
+  box-shadow:0 3px 10px rgba(200,151,58,.4);
+  transition:opacity .15s;
+}
+.lbtn:hover{opacity:.9}
+.lhint{text-align:center;font-size:11px;color:var(--text3);margin-top:12px}
+
+/* ─── LAYOUT ─── */
+#app{display:flex;height:100vh;width:100vw}
+
+/* ─── SIDEBAR ─── */
+.sb{
+  width:var(--sidebar);min-width:var(--sidebar);
+  background:var(--bg2);border-right:1.5px solid var(--border);
+  display:flex;flex-direction:column;height:100vh;overflow-y:auto;
+}
+.sb-brand{
+  padding:18px 16px 14px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.sb-icon{
+  width:32px;height:32px;min-width:32px;
+  background:linear-gradient(135deg,#e8b84b,#b07820);
+  border-radius:9px;display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;color:#fff;font-family:var(--mono);
+  box-shadow:0 2px 6px rgba(200,151,58,.3);
+}
+.sb-name{font-size:13px;font-weight:600;color:var(--text)}
+.sb-sub{font-size:10px;color:var(--text3)}
+
+.sb-section{padding:12px 8px 4px}
+.sb-label{font-size:9px;color:var(--text3);letter-spacing:1.2px;text-transform:uppercase;padding:0 8px;margin-bottom:5px}
+.nb{
+  display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;
+  cursor:pointer;color:var(--text2);font-size:12px;border:none;background:none;
+  width:100%;text-align:left;transition:all .12s;position:relative;margin-bottom:1px;
+}
+.nb:hover{background:var(--bg3);color:var(--text)}
+.nb.active{background:var(--gold-bg);color:var(--gold);font-weight:500}
+.nb.active::before{
+  content:'';position:absolute;left:0;top:5px;bottom:5px;
+  width:3px;background:var(--gold2);border-radius:0 3px 3px 0;
+}
+.ni{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.nb-label{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{font-size:9px;font-family:var(--mono);padding:2px 6px;border-radius:20px;flex-shrink:0;font-weight:500}
+.b-live{background:var(--teal-bg);color:var(--teal)}
+.b-dev{background:#fff0e8;color:#c05a20}
+.b-wip{background:var(--gold-bg);color:var(--gold)}
+.b-soon{background:var(--bg3);color:var(--text3)}
+
+.sb-divider{height:1px;background:var(--border);margin:6px 14px}
+.sb-footer{margin-top:auto;padding:10px 8px;border-top:1px solid var(--border)}
+.user-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:background .12s}
+.user-row:hover{background:var(--bg3)}
+.uavatar{
+  width:28px;height:28px;border-radius:50%;min-width:28px;
+  background:linear-gradient(135deg,#e8b84b,#b07820);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:600;color:#fff;
+}
+.uname{font-size:12px;font-weight:500;color:var(--text)}
+.urole{font-size:10px;color:var(--text3)}
+
+/* ─── MAIN ─── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;height:100vh}
+
+/* ─── TOPBAR ─── */
+.topbar{
+  height:50px;min-height:50px;background:var(--bg2);
+  border-bottom:1.5px solid var(--border);
+  display:flex;align-items:center;padding:0 20px;gap:10px;
+  box-shadow:0 1px 0 var(--border);
+}
+.tb-title{font-size:14px;font-weight:600;color:var(--text)}
+.tb-url{
+  font-size:10px;color:var(--text3);font-family:var(--mono);
+  background:var(--bg3);padding:3px 8px;border-radius:5px;border:1px solid var(--border);
+}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.tbtn{padding:6px 13px;border-radius:7px;font-size:11px;font-weight:500;cursor:pointer;border:none;font-family:var(--font);transition:all .12s}
+.tbtn-ghost{background:var(--bg3);color:var(--text2);border:1.5px solid var(--border)}
+.tbtn-ghost:hover{border-color:var(--border2);color:var(--text)}
+.tbtn-gold{background:linear-gradient(135deg,#e8b84b,#b07820);color:#fff;box-shadow:0 2px 6px rgba(200,151,58,.3)}
+.tbtn-gold:hover{opacity:.9}
+
+/* ─── CONTENT ─── */
+.content{flex:1;overflow:hidden;position:relative}
+
+/* SYSTEM PAGE */
+.sys-page{position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:0;background:var(--bg)}
+.sys-page.active{display:flex}
+.sys-page-card{
+  background:var(--bg2);border:1.5px solid var(--border);border-radius:20px;
+  padding:40px 48px;text-align:center;box-shadow:var(--shadow-md);
+  max-width:480px;width:90%;
+}
+.sys-page-icon{font-size:40px;margin-bottom:14px}
+.sys-page-name{font-size:18px;font-weight:600;color:var(--text);margin-bottom:6px}
+.sys-page-url{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:20px;background:var(--bg3);padding:4px 12px;border-radius:6px;display:inline-block}
+.sys-page-desc{font-size:12px;color:var(--text2);margin-bottom:24px;line-height:1.6}
+.open-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:12px 28px;
+  background:linear-gradient(135deg,#e8b84b,#b07820);
+  color:#fff;border:none;border-radius:10px;
+  font-size:14px;font-weight:600;font-family:var(--font);
+  cursor:pointer;text-decoration:none;
+  box-shadow:0 3px 10px rgba(200,151,58,.35);
+  transition:opacity .15s;
+}
+.open-btn:hover{opacity:.9}
+.sys-page-note{font-size:11px;color:var(--text3);margin-top:12px}
+
+/* HOME */
+.home-wrap{position:absolute;inset:0;overflow-y:auto;padding:24px;display:none}
+.home-wrap.active{display:block}
+
+.greeting{
+  background:linear-gradient(135deg,var(--gold-bg) 0%,#fffdf5 100%);
+  border:1.5px solid var(--gold-border);border-radius:16px;
+  padding:22px 26px;margin-bottom:20px;position:relative;overflow:hidden;
+}
+.greeting::before{
+  content:'B';position:absolute;right:24px;top:50%;transform:translateY(-50%);
+  font-size:80px;font-weight:700;font-family:var(--mono);
+  color:var(--gold-border);opacity:.5;pointer-events:none;line-height:1;
+}
+.greet-time{font-size:11px;color:var(--gold);font-family:var(--mono);margin-bottom:5px;font-weight:500}
+.greet-title{font-size:20px;font-weight:600;color:var(--text);margin-bottom:3px}
+.greet-sub{font-size:12px;color:var(--text2)}
+
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.scard{
+  background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;
+  padding:16px;cursor:pointer;transition:all .15s;box-shadow:var(--shadow);
+}
+.scard:hover{border-color:var(--gold-border);transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.sc-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+.sc-val{font-size:22px;font-weight:600;color:var(--text);font-family:var(--mono);line-height:1}
+.sc-delta{font-size:10px;margin-top:5px;color:var(--text3)}
+.sc-delta.up{color:var(--teal)}
+.sc-delta.warn{color:var(--gold)}
+
+.sys-title{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}
+.sys-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.sys-card{
+  background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;
+  padding:16px 16px 14px;cursor:pointer;transition:all .18s;
+  position:relative;overflow:hidden;box-shadow:var(--shadow);
+}
+.sys-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.sys-card.live{border-top:3px solid var(--teal)}
+.sys-card.dev{border-top:3px solid #e07830}
+.sys-card.wip{border-top:3px solid var(--gold2)}
+.sys-card.soon{border-top:3px solid var(--border2)}
+.sys-icon{font-size:20px;margin-bottom:8px}
+.sys-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:3px}
+.sys-desc{font-size:10px;color:var(--text3);line-height:1.5;margin-bottom:8px}
+.sys-footer{display:flex;align-items:center;justify-content:space-between}
+.sys-open{font-size:10px;color:var(--gold);opacity:0;transition:opacity .15s;font-weight:500}
+.sys-card:hover .sys-open{opacity:1}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.panel{background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+.panel-title{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}
+.act-list{display:flex;flex-direction:column;gap:6px}
+.act-item{display:flex;gap:10px;padding:8px;border-radius:7px;cursor:pointer;transition:background .12s;border:1.5px solid transparent}
+.act-item:hover{background:var(--bg3);border-color:var(--border)}
+.act-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.act-text{font-size:11px;color:var(--text2);line-height:1.5}
+.act-text b{color:var(--text);font-weight:500}
+.act-time{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:1px}
+
+.soon-wrap{position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;background:var(--bg)}
+.soon-wrap.active{display:flex}
+.soon-icon{font-size:44px;margin-bottom:4px}
+.soon-title{font-size:15px;font-weight:600;color:var(--text)}
+.soon-sub{font-size:12px;color:var(--text3)}
+
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="lcard">
+    <div class="lbrand">B</div>
+    <div class="ltitle">BRB Bidding Portal</div>
+    <div class="lsub">บุญรอดบริวเวอรี่ · ระบบจัดซื้อจัดจ้างรวมศูนย์</div>
+    <div class="lroles">
+      <button class="lrole active" onclick="setRole(this,'admin','Admin BRB','Administrator')"><span class="ri">⚙️</span>Admin</button>
+      <button class="lrole" onclick="setRole(this,'buyer','Buyer Manager','Procurement Buyer')"><span class="ri">🏢</span>Buyer</button>
+      <button class="lrole" onclick="setRole(this,'vendor','Vendor Corp','Vendor')"><span class="ri">🏭</span>Vendor</button>
+    </div>
+    <div class="lfield">
+      <label class="llabel">อีเมล</label>
+      <input class="linput" id="lemail" value="admin@brb.co.th">
+    </div>
+    <div class="lfield">
+      <label class="llabel">รหัสผ่าน</label>
+      <input class="linput" type="password" value="••••••••">
+    </div>
+    <button class="lbtn" onclick="login()">เข้าสู่ระบบ →</button>
+    <div class="lhint">Demo mode · กดเข้าได้เลยครับ</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+<aside class="sb">
+  <div class="sb-brand">
+    <div class="sb-icon">B</div>
+    <div><div class="sb-name">BRB Portal</div><div class="sb-sub">Procurement System</div></div>
+  </div>
+  <div class="sb-section">
+    <div class="sb-label">Overview</div>
+    <button class="nb active" onclick="go(this,'home')"><span class="ni">🏠</span><span class="nb-label">Dashboard หลัก</span></button>
+  </div>
+  <div class="sb-section">
+    <div class="sb-label">ระบบหลัก</div>
+    <button class="nb" onclick="go(this,'bidding')"><span class="ni">📊</span><span class="nb-label">Dashboard Bidding</span><span class="badge b-live">live</span></button>
+    <button class="nb" onclick="go(this,'alignment')"><span class="ni">📄</span><span class="nb-label">Alignment Doc</span><span class="badge b-live">live</span></button>
+    <button class="nb" onclick="go(this,'vendor')"><span class="ni">🏭</span><span class="nb-label">Vendor Register</span><span class="badge b-dev">dev</span></button>
+    <button class="nb" onclick="go(this,'planner')"><span class="ni">📅</span><span class="nb-label">Work Planner</span><span class="badge b-wip">wip</span></button>
+    <button class="nb" onclick="go(this,'satisfaction')"><span class="ni">⭐</span><span class="nb-label">ประเมินพึงพอใจ</span><span class="badge b-soon">soon</span></button>
+    <button class="nb" onclick="go(this,'tracking')"><span class="ni">🔍</span><span class="nb-label">Bidding Tracking</span><span class="badge b-soon">soon</span></button>
+  </div>
+  <div class="sb-divider"></div>
+  <div class="sb-footer">
+    <div class="user-row" onclick="logout()">
+      <div class="uavatar" id="uav">A</div>
+      <div><div class="uname" id="uname">Admin BRB</div><div class="urole" id="urole">Administrator</div></div>
+      <div style="margin-left:auto;font-size:11px;color:var(--text3)">⏻</div>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tb-title" id="tb-title">Dashboard หลัก</div>
+    <div class="tb-url" id="tb-url" style="display:none"></div>
+    <div class="tb-right">
+      <span style="font-size:11px;color:var(--teal);background:var(--teal-bg);padding:3px 8px;border-radius:5px;font-weight:500">● ระบบปกติ</span>
+      <button class="tbtn tbtn-ghost">🔔 แจ้งเตือน</button>
+      <button class="tbtn tbtn-gold">+ สร้างใหม่</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- HOME -->
+    <div class="home-wrap active" id="p-home">
+      <div class="greeting">
+        <div class="greet-time" id="greet-time"></div>
+        <div class="greet-title" id="greet-name">ยินดีต้อนรับครับ 👋</div>
+        <div class="greet-sub">BRB Procurement Portal — รวมทุกระบบไว้ที่นี่</div>
+      </div>
+
+      <div class="stats-row">
+        <div class="scard" onclick="go(document.querySelector('[onclick*=bidding]'),'bidding')">
+          <div class="sc-label">Bidding ทั้งหมด</div><div class="sc-val">48</div><div class="sc-delta up">↑ +6 เดือนนี้</div>
+        </div>
+        <div class="scard" onclick="go(document.querySelector('[onclick*=vendor]'),'vendor')">
+          <div class="sc-label">Vendor ลงทะเบียน</div><div class="sc-val">127</div><div class="sc-delta up">↑ +12 ล่าสุด</div>
+        </div>
+        <div class="scard" onclick="go(document.querySelector('[onclick*=alignment]'),'alignment')">
+          <div class="sc-label">Doc รออนุมัติ</div><div class="sc-val">9</div><div class="sc-delta warn">⚠ รอดำเนินการ</div>
+        </div>
+        <div class="scard">
+          <div class="sc-label">งบประมาณ (ล้านบาท)</div><div class="sc-val">84.2</div><div class="sc-delta up">↑ vs Q3: +8%</div>
+        </div>
+      </div>
+
+      <div class="sys-title">🗂 ระบบทั้งหมด — คลิกเพื่อเปิด</div>
+      <div class="sys-grid">
+        <div class="sys-card live" onclick="go(document.querySelector('[onclick*=bidding]'),'bidding')">
+          <div class="sys-icon">📊</div><div class="sys-name">Dashboard Bidding</div>
+          <div class="sys-desc">ติดตามกระบวนการ Bidding ทั้งหมด</div>
+          <div class="sys-footer"><span class="badge b-live">● Live</span><span class="sys-open">เปิด →</span></div>
+        </div>
+        <div class="sys-card live" onclick="go(document.querySelector('[onclick*=alignment]'),'alignment')">
+          <div class="sys-icon">📄</div><div class="sys-name">Alignment Doc Tracking</div>
+          <div class="sys-desc">ติดตามสถานะเอกสารและการอนุมัติ</div>
+          <div class="sys-footer"><span class="badge b-live">● Live</span><span class="sys-open">เปิด →</span></div>
+        </div>
+        <div class="sys-card dev" onclick="go(document.querySelector('[onclick*=vendor]'),'vendor')">
+          <div class="sys-icon">🏭</div><div class="sys-name">Vendor Register</div>
+          <div class="sys-desc">ลงทะเบียนและจัดการ Vendor / ผู้รับเหมา</div>
+          <div class="sys-footer"><span class="badge b-dev">In Dev</span><span class="sys-open">เปิด →</span></div>
+        </div>
+        <div class="sys-card wip" onclick="go(document.querySelector('[onclick*=planner]'),'planner')">
+          <div class="sys-icon">📅</div><div class="sys-name">Work Planner</div>
+          <div class="sys-desc">วางแผนงานและติดตามความคืบหน้า</div>
+          <div class="sys-footer"><span class="badge b-wip">WIP</span><span class="sys-open">เปิด →</span></div>
+        </div>
+        <div class="sys-card soon">
+          <div class="sys-icon">⭐</div><div class="sys-name">Dashboard พึงพอใจ</div>
+          <div class="sys-desc">ประเมินความพึงพอใจหลังจบโครงการ</div>
+          <div class="sys-footer"><span class="badge b-soon">Planned</span></div>
+        </div>
+        <div class="sys-card soon">
+          <div class="sys-icon">🔍</div><div class="sys-name">Bidding Tracking</div>
+          <div class="sys-desc">ติดตาม Bidding แบบ Real-time</div>
+          <div class="sys-footer"><span class="badge b-soon">Planned</span></div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-title">📋 กิจกรรมล่าสุด</div>
+          <div class="act-list">
+            <div class="act-item"><div class="act-dot" style="background:var(--gold2)"></div><div><div class="act-text"><b>Vendor ใหม่</b> บ.สยามเทคโนโลยี จำกัด ส่งใบสมัคร</div><div class="act-time">10 นาทีที่แล้ว</div></div></div>
+            <div class="act-item"><div class="act-dot" style="background:var(--teal)"></div><div><div class="act-text"><b>Bidding #BRB-048</b> ปิด — มี 5 ราย offer</div><div class="act-time">1 ชั่วโมงที่แล้ว</div></div></div>
+            <div class="act-item"><div class="act-dot" style="background:var(--blue)"></div><div><div class="act-text"><b>Alignment Doc</b> ห้องเย็น Phase 2 อนุมัติแล้ว</div><div class="act-time">3 ชั่วโมงที่แล้ว</div></div></div>
+            <div class="act-item"><div class="act-dot" style="background:var(--gold2)"></div><div><div class="act-text"><b>Work Planner</b> Q1/2025 อัปเดตแผนงาน 3 รายการ</div><div class="act-time">วานนี้ 15:30</div></div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">🔗 ลิงก์ระบบ</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <a href="https://boonrawd-bidding.pages.dev/" target="_blank" style="text-decoration:none">
+              <div class="act-item" style="border:1.5px solid var(--border)"><span style="font-size:14px">📊</span><div><div style="font-size:11px;color:var(--text);font-weight:500">Dashboard Bidding</div><div style="font-size:10px;color:var(--text3);font-family:var(--mono)">boonrawd-bidding.pages.dev</div></div><span style="margin-left:auto;font-size:11px;color:var(--gold)">↗</span></div>
+            </a>
+            <a href="https://alignment-doc-tracking.vercel.app/" target="_blank" style="text-decoration:none">
+              <div class="act-item" style="border:1.5px solid var(--border)"><span style="font-size:14px">📄</span><div><div style="font-size:11px;color:var(--text);font-weight:500">Alignment Doc</div><div style="font-size:10px;color:var(--text3);font-family:var(--mono)">alignment-doc-tracking.vercel.app</div></div><span style="margin-left:auto;font-size:11px;color:var(--gold)">↗</span></div>
+            </a>
+            <a href="https://vendor-register-gules.vercel.app/" target="_blank" style="text-decoration:none">
+              <div class="act-item" style="border:1.5px solid var(--border)"><span style="font-size:14px">🏭</span><div><div style="font-size:11px;color:var(--text);font-weight:500">Vendor Register</div><div style="font-size:10px;color:var(--text3);font-family:var(--mono)">vendor-register-gules.vercel.app</div></div><span style="margin-left:auto;font-size:11px;color:var(--gold)">↗</span></div>
+            </a>
+            <a href="https://work-planner-ebon.vercel.app/" target="_blank" style="text-decoration:none">
+              <div class="act-item" style="border:1.5px solid var(--border)"><span style="font-size:14px">📅</span><div><div style="font-size:11px;color:var(--text);font-weight:500">Work Planner</div><div style="font-size:10px;color:var(--text3);font-family:var(--mono)">work-planner-ebon.vercel.app</div></div><span style="margin-left:auto;font-size:11px;color:var(--gold)">↗</span></div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SYSTEM PAGES (open in new tab) -->
+    <div class="sys-page" id="p-bidding">
+      <div class="sys-page-card">
+        <div class="sys-page-icon">📊</div>
+        <div class="sys-page-name">Dashboard Bidding</div>
+        <div class="sys-page-url">boonrawd-bidding.pages.dev</div>
+        <div class="sys-page-desc">ติดตามและจัดการกระบวนการ Bidding ทั้งหมด<br>เปิดใน tab ใหม่เพื่อใช้งานได้เลยครับ</div>
+        <a class="open-btn" href="https://boonrawd-bidding.pages.dev/" target="_blank">🚀 เปิดระบบ Dashboard Bidding</a>
+        <div class="sys-page-note">เปิดใน tab ใหม่ · ระบบ Live</div>
+      </div>
+    </div>
+    <div class="sys-page" id="p-alignment">
+      <div class="sys-page-card">
+        <div class="sys-page-icon">📄</div>
+        <div class="sys-page-name">Alignment Doc Tracking</div>
+        <div class="sys-page-url">alignment-doc-tracking.vercel.app</div>
+        <div class="sys-page-desc">ติดตามสถานะเอกสารและการอนุมัติทุกขั้นตอน<br>เปิดใน tab ใหม่เพื่อใช้งานได้เลยครับ</div>
+        <a class="open-btn" href="https://alignment-doc-tracking.vercel.app/" target="_blank">🚀 เปิดระบบ Alignment Doc</a>
+        <div class="sys-page-note">เปิดใน tab ใหม่ · ระบบ Live</div>
+      </div>
+    </div>
+    <div class="sys-page" id="p-vendor">
+      <div class="sys-page-card">
+        <div class="sys-page-icon">🏭</div>
+        <div class="sys-page-name">Vendor Register</div>
+        <div class="sys-page-url">vendor-register-gules.vercel.app</div>
+        <div class="sys-page-desc">ลงทะเบียนและจัดการข้อมูล Vendor / ผู้รับเหมา<br>เปิดใน tab ใหม่เพื่อใช้งานได้เลยครับ</div>
+        <a class="open-btn" href="https://vendor-register-gules.vercel.app/" target="_blank">🚀 เปิดระบบ Vendor Register</a>
+        <div class="sys-page-note">เปิดใน tab ใหม่ · In Development</div>
+      </div>
+    </div>
+    <div class="sys-page" id="p-planner">
+      <div class="sys-page-card">
+        <div class="sys-page-icon">📅</div>
+        <div class="sys-page-name">Work Planner</div>
+        <div class="sys-page-url">work-planner-ebon.vercel.app</div>
+        <div class="sys-page-desc">วางแผนงานและติดตามความคืบหน้า<br>เปิดใน tab ใหม่เพื่อใช้งานได้เลยครับ</div>
+        <a class="open-btn" href="https://work-planner-ebon.vercel.app/" target="_blank">🚀 เปิดระบบ Work Planner</a>
+        <div class="sys-page-note">เปิดใน tab ใหม่ · WIP</div>
+      </div>
+    </div>
+
+    <!-- SOON -->
+    <div class="soon-wrap" id="p-satisfaction"><div class="soon-icon">⭐</div><div class="soon-title">Dashboard ประเมินความพึงพอใจ</div><div class="soon-sub">กำลังจะมาเร็วๆ นี้ครับ</div></div>
+    <div class="soon-wrap" id="p-tracking"><div class="soon-icon">🔍</div><div class="soon-title">Bidding Tracking</div><div class="soon-sub">กำลังจะมาเร็วๆ นี้ครับ</div></div>
+
+  </div>
+</div>
+</div>
+
+<script>
+const URLS={bidding:'https://boonrawd-bidding.pages.dev/',alignment:'https://alignment-doc-tracking.vercel.app/',vendor:'https://vendor-register-gules.vercel.app/',planner:'https://work-planner-ebon.vercel.app/'};
+const TITLES={home:'Dashboard หลัก',bidding:'Dashboard Bidding',alignment:'Alignment Doc Tracking',vendor:'Vendor Register',planner:'Work Planner',satisfaction:'Dashboard ประเมินพึงพอใจ',tracking:'Bidding Tracking'};
+let currentRole={name:'Admin BRB',role:'Administrator'};
+
+function setRole(el,id,name,role){
+  document.querySelectorAll('.lrole').forEach(r=>r.classList.remove('active'));
+  el.classList.add('active');currentRole={name,role};
+  const e={admin:'admin@brb.co.th',buyer:'buyer@brb.co.th',vendor:'vendor@brb.co.th'};
+  document.getElementById('lemail').value=e[id];
+}
+function login(){
+  const l=document.getElementById('login');
+  l.style.transition='opacity .3s';l.style.opacity='0';
+  setTimeout(()=>{l.style.display='none';document.getElementById('app').style.display='flex';},300);
+  document.getElementById('uname').textContent=currentRole.name;
+  document.getElementById('urole').textContent=currentRole.role;
+  document.getElementById('uav').textContent=currentRole.name[0];
+  updateGreeting();
+}
+function logout(){
+  document.getElementById('app').style.display='none';
+  const l=document.getElementById('login');l.style.display='flex';l.style.opacity='1';
+}
+function updateGreeting(){
+  const h=new Date().getHours();
+  const g=h<12?'อรุณสวัสดิ์ครับ ☀️':h<18?'สวัสดีตอนบ่ายครับ 👋':'สวัสดีตอนเย็นครับ 🌙';
+  const d=new Date();
+  const days=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัส','ศุกร์','เสาร์'];
+  const months=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  document.getElementById('greet-time').textContent=`วัน${days[d.getDay()]}ที่ ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()+543} · ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')} น.`;
+  document.getElementById('greet-name').textContent=`${g} คุณ${currentRole.name}`;
+}
+function go(el,pid){
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  if(el&&el.classList)el.classList.add('active');
+  document.querySelectorAll('.home-wrap,.sys-page,.soon-wrap').forEach(p=>p.classList.remove('active'));
+  document.getElementById('p-'+pid).classList.add('active');
+  document.getElementById('tb-title').textContent=TITLES[pid]||pid;
+  const u=document.getElementById('tb-url');
+  if(URLS[pid]){u.textContent=URLS[pid].replace('https://','');u.style.display='';}
+  else{u.style.display='none';}
+}
+setTimeout(updateGreeting,100);
+</script>
+</body>
+</html>
