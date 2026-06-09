@@ -167,12 +167,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex
   <div class="sb-section">
     <div class="sb-label">ระบบหลัก</div>
     <button class="nb" onclick="go(this,'bidding')"><span class="ni">📊</span><span class="nb-label">Dashboard Bidding</span><span class="badge b-live">live</span></button>
+    <button class="nb" onclick="go(this,'contract')"><span class="ni">📋</span><span class="nb-label">ทะเบียนสัญญา &amp; BG</span><span class="badge b-live">live</span></button>
+    <button class="nb" onclick="go(this,'satisfaction')"><span class="ni">⭐</span><span class="nb-label">ประเมินพึงพอใจ</span><span class="badge b-live">live</span></button>
     <button class="nb" onclick="go(this,'alignment')"><span class="ni">📄</span><span class="nb-label">Alignment Doc</span><span class="badge b-live">live</span></button>
     <button class="nb" onclick="go(this,'vendor')"><span class="ni">🏭</span><span class="nb-label">Vendor Register</span><span class="badge b-dev">dev</span></button>
     <button class="nb" onclick="go(this,'planner')"><span class="ni">📅</span><span class="nb-label">Work Planner</span><span class="badge b-wip">wip</span></button>
-    <button class="nb" onclick="go(this,'satisfaction')"><span class="ni">⭐</span><span class="nb-label">ประเมินพึงพอใจ</span><span class="badge b-live">live</span></button>
     <button class="nb" onclick="go(this,'tracking')"><span class="ni">🔍</span><span class="nb-label">Bidding Tracking</span><span class="badge b-soon">soon</span></button>
-    <button class="nb" onclick="go(this,'contract')"><span class="ni">📋</span><span class="nb-label">ทะเบียนสัญญา &amp; BG</span><span class="badge b-live">live</span></button>
   </div>
   <div class="sb-divider"></div>
   <div class="sb-footer">
@@ -223,6 +223,16 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex
           <div class="sys-desc">ติดตามกระบวนการ Bidding ทั้งหมด</div>
           <div class="sys-footer"><span class="badge b-live">● Live</span><span class="sys-open">เปิด →</span></div>
         </div>
+        <div class="sys-card live" onclick="go(document.querySelector('[onclick*=contract]'),'contract')">
+          <div class="sys-icon">📋</div><div class="sys-name">ทะเบียนสัญญา &amp; หลักประกัน</div>
+          <div class="sys-desc">จัดการสัญญาและ BG พร้อมแจ้งเตือนใกล้หมดอายุ</div>
+          <div class="sys-footer"><span class="badge b-live">● Live</span><span class="sys-open">เปิด →</span></div>
+        </div>
+        <div class="sys-card live" onclick="go(document.querySelector('[onclick*=satisfaction]'),'satisfaction')">
+          <div class="sys-icon">⭐</div><div class="sys-name">Dashboard พึงพอใจ</div>
+          <div class="sys-desc">ผลสำรวจความพึงพอใจ Project Bidding 2026</div>
+          <div class="sys-footer"><span class="badge b-live">● Live</span><span class="sys-open">เปิด →</span></div>
+        </div>
         <div class="sys-card live" onclick="go(document.querySelector('[onclick*=alignment]'),'alignment')">
           <div class="sys-icon">📄</div><div class="sys-name">Alignment Doc Tracking</div>
           <div class="sys-desc">ติดตามสถานะเอกสารและการอนุมัติ</div>
@@ -238,20 +248,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex
           <div class="sys-desc">วางแผนงานและติดตามความคืบหน้า</div>
           <div class="sys-footer"><span class="badge b-wip">WIP</span><span class="sys-open">เปิด →</span></div>
         </div>
-        <div class="sys-card live" onclick="go(document.querySelector('[onclick*=satisfaction]'),'satisfaction')">
-          <div class="sys-icon">⭐</div><div class="sys-name">Dashboard พึงพอใจ</div>
-          <div class="sys-desc">ผลสำรวจความพึงพอใจ Project Bidding 2026</div>
-          <div class="sys-footer"><span class="badge b-live">● Live</span><span class="sys-open">เปิด →</span></div>
-        </div>
         <div class="sys-card soon">
           <div class="sys-icon">🔍</div><div class="sys-name">Bidding Tracking</div>
           <div class="sys-desc">ติดตาม Bidding แบบ Real-time</div>
           <div class="sys-footer"><span class="badge b-soon">Planned</span></div>
-        </div>
-        <div class="sys-card live" onclick="go(document.querySelector('[onclick*=contract]'),'contract')">
-          <div class="sys-icon">📋</div><div class="sys-name">ทะเบียนสัญญา &amp; หลักประกัน</div>
-          <div class="sys-desc">จัดการสัญญาและ BG พร้อมแจ้งเตือนใกล้หมดอายุ</div>
-          <div class="sys-footer"><span class="badge b-live">● Live</span><span class="sys-open">เปิด →</span></div>
         </div>
       </div>
       <div class="two-col">
