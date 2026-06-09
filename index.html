@@ -172,6 +172,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex
     <button class="nb" onclick="go(this,'planner')"><span class="ni">📅</span><span class="nb-label">Work Planner</span><span class="badge b-wip">wip</span></button>
     <button class="nb" onclick="go(this,'satisfaction')"><span class="ni">⭐</span><span class="nb-label">ประเมินพึงพอใจ</span><span class="badge b-live">live</span></button>
     <button class="nb" onclick="go(this,'tracking')"><span class="ni">🔍</span><span class="nb-label">Bidding Tracking</span><span class="badge b-soon">soon</span></button>
+    <button class="nb" onclick="go(this,'contract')"><span class="ni">📋</span><span class="nb-label">ทะเบียนสัญญา &amp; BG</span><span class="badge b-live">live</span></button>
   </div>
   <div class="sb-divider"></div>
   <div class="sb-footer">
@@ -247,6 +248,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex
           <div class="sys-desc">ติดตาม Bidding แบบ Real-time</div>
           <div class="sys-footer"><span class="badge b-soon">Planned</span></div>
         </div>
+        <div class="sys-card live" onclick="go(document.querySelector('[onclick*=contract]'),'contract')">
+          <div class="sys-icon">📋</div><div class="sys-name">ทะเบียนสัญญา &amp; หลักประกัน</div>
+          <div class="sys-desc">จัดการสัญญาและ BG พร้อมแจ้งเตือนใกล้หมดอายุ</div>
+          <div class="sys-footer"><span class="badge b-live">● Live</span><span class="sys-open">เปิด →</span></div>
+        </div>
       </div>
       <div class="two-col">
         <div class="panel">
@@ -275,6 +281,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex
             </a>
             <a href="https://boonrawd-satisfaction.projectbiddingbrb.workers.dev" target="_blank" style="text-decoration:none">
               <div class="act-item" style="border:1.5px solid var(--border)"><span style="font-size:14px">⭐</span><div><div style="font-size:11px;color:var(--text);font-weight:500">Dashboard พึงพอใจ</div><div style="font-size:10px;color:var(--text3);font-family:var(--mono)">boonrawd-satisfaction.projectbiddingbrb.workers.dev</div></div><span style="margin-left:auto;font-size:11px;color:var(--gold)">↗</span></div>
+            </a>
+            <a href="https://brb-contract-bg.vercel.app/" target="_blank" style="text-decoration:none">
+              <div class="act-item" style="border:1.5px solid var(--border)"><span style="font-size:14px">📋</span><div><div style="font-size:11px;color:var(--text);font-weight:500">ทะเบียนสัญญา &amp; BG</div><div style="font-size:10px;color:var(--text3);font-family:var(--mono)">brb-contract-bg.vercel.app</div></div><span style="margin-left:auto;font-size:11px;color:var(--gold)">↗</span></div>
             </a>
           </div>
         </div>
@@ -335,13 +344,25 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex
     </div>
 
     <div class="soon-wrap" id="p-tracking"><div class="soon-icon">🔍</div><div class="soon-title">Bidding Tracking</div><div class="soon-sub">กำลังจะมาเร็วๆ นี้ครับ</div></div>
+
+    <!-- ✅ NEW: contract & BG page -->
+    <div class="sys-page" id="p-contract">
+      <div class="sys-page-card">
+        <div class="sys-page-icon">📋</div>
+        <div class="sys-page-name">ทะเบียนสัญญา &amp; หลักประกัน (BG)</div>
+        <div class="sys-page-url">brb-contract-bg.vercel.app</div>
+        <div class="sys-page-desc">จัดการสัญญาและหลักประกัน พร้อมแจ้งเตือน BG ใกล้หมดอายุ<br>เปิดใน tab ใหม่เพื่อใช้งานได้เลยครับ</div>
+        <a class="open-btn" href="https://brb-contract-bg.vercel.app/" target="_blank">🚀 เปิดระบบ ทะเบียนสัญญา &amp; BG</a>
+        <div class="sys-page-note">เปิดใน tab ใหม่ · ระบบ Live</div>
+      </div>
+    </div>
   </div>
 </div>
 </div>
 
 <script>
-const URLS={bidding:'https://boonrawd-bidding.pages.dev/',alignment:'https://alignment-doc-tracking.vercel.app/',vendor:'https://vendor-register-gules.vercel.app/',planner:'https://work-planner-ebon.vercel.app/',satisfaction:'https://boonrawd-satisfaction.projectbiddingbrb.workers.dev'};
-const TITLES={home:'Dashboard หลัก',bidding:'Dashboard Bidding',alignment:'Alignment Doc Tracking',vendor:'Vendor Register',planner:'Work Planner',satisfaction:'Dashboard ประเมินความพึงพอใจ',tracking:'Bidding Tracking'};
+const URLS={bidding:'https://boonrawd-bidding.pages.dev/',alignment:'https://alignment-doc-tracking.vercel.app/',vendor:'https://vendor-register-gules.vercel.app/',planner:'https://work-planner-ebon.vercel.app/',satisfaction:'https://boonrawd-satisfaction.projectbiddingbrb.workers.dev',contract:'https://brb-contract-bg.vercel.app/'};
+const TITLES={home:'Dashboard หลัก',bidding:'Dashboard Bidding',alignment:'Alignment Doc Tracking',vendor:'Vendor Register',planner:'Work Planner',satisfaction:'Dashboard ประเมินความพึงพอใจ',tracking:'Bidding Tracking',contract:'ทะเบียนสัญญา & หลักประกัน (BG)'};
 let currentRole={name:'Admin BRB',role:'Administrator'};
 function setRole(el,id,name,role){document.querySelectorAll('.lrole').forEach(r=>r.classList.remove('active'));el.classList.add('active');currentRole={name,role};const e={admin:'admin@brb.co.th',buyer:'buyer@brb.co.th',vendor:'vendor@brb.co.th'};document.getElementById('lemail').value=e[id];}
 function login(){const l=document.getElementById('login');l.style.transition='opacity .3s';l.style.opacity='0';setTimeout(()=>{l.style.display='none';document.getElementById('app').style.display='flex';},300);document.getElementById('uname').textContent=currentRole.name;document.getElementById('urole').textContent=currentRole.role;document.getElementById('uav').textContent=currentRole.name[0];updateGreeting();}
