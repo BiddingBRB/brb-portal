@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document Tracking — BRB Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#faf7f0; --card:#ffffff; --ink:#26221b; --muted:#8a8172;
+  --line:#e9e2d3; --gold:#b8860b; --gold-soft:#fdf6e3; --gold-line:#eadfc0;
+  --green:#1f9d55; --green-soft:#e8f7ee;
+  --orange:#d97706; --orange-soft:#fef3e2;
+  --red:#c0392b; --red-soft:#fdecea;
+  --blue:#2563a8; --blue-soft:#e8f0fa;
+  --side:#191612; --side-ink:#d8d2c4;
+  --radius:14px;
+  font-size:15px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--ink);display:flex;min-height:100vh}
+.mono{font-family:'IBM Plex Mono',monospace}
+
+/* ── Sidebar ── */
+aside{width:210px;background:var(--side);color:var(--side-ink);padding:20px 0;position:sticky;top:0;height:100vh;flex-shrink:0;display:flex;flex-direction:column}
+.brand{display:flex;gap:10px;align-items:center;padding:0 18px 18px;margin-bottom:14px;border-bottom:1px solid #2b2620}
+.brand .logo{width:34px;height:34px;border-radius:9px;background:var(--gold);color:#fff;display:grid;place-items:center;font-weight:700;font-size:17px}
+.brand b{color:#fff;font-size:15px;display:block;line-height:1.2}
+.brand small{font-size:11px;color:#7d7666}
+.nav-label{font-size:10px;letter-spacing:.12em;color:#6e6656;padding:8px 18px 4px;text-transform:uppercase}
+aside a{display:flex;align-items:center;gap:9px;color:var(--side-ink);text-decoration:none;font-size:13.5px;padding:9px 18px;border-left:3px solid transparent}
+aside a:hover{background:#221e18;color:#fff}
+aside a.active{background:#26211a;color:#f3c14b;border-left-color:var(--gold);font-weight:600}
+aside a .tag{margin-left:auto;font-size:9.5px;padding:1px 7px;border-radius:20px;background:#2e2921;color:#9a9385}
+aside a .tag.live{color:#5fd08a;background:#173322}
+.side-foot{margin-top:auto;padding:14px 18px;border-top:1px solid #2b2620;font-size:12px;color:#7d7666}
+
+/* ── Main ── */
+main{flex:1;min-width:0;padding:22px 28px 60px}
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.topbar h1{font-size:20px;font-weight:700}
+.topbar .spacer{flex:1}
+.btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 15px;font-family:inherit;font-size:13.5px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;color:var(--ink)}
+.btn:hover{border-color:#d5cbb4;background:#fdfbf5}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:#fff;font-weight:600}
+.btn.gold:hover{background:#a3760a}
+.btn.ghost-red{color:var(--red)}
+.btn:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* greeting */
+.hello{background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:var(--radius);padding:16px 22px;margin-bottom:20px;position:relative;overflow:hidden}
+.hello .date{font-size:12px;color:var(--muted)}
+.hello h2{font-size:19px;margin-top:2px}
+.hello p{font-size:13px;color:#7a6f57;margin-top:2px}
+.hello .wm{position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:64px;font-weight:700;color:rgba(184,134,11,.14);font-family:'IBM Plex Mono',monospace}
+
+/* stat cards */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:22px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;cursor:pointer;transition:border-color .15s,transform .15s}
+.stat:hover{border-color:var(--gold);transform:translateY(-1px)}
+.stat .lb{font-size:11px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.stat .num{font-size:30px;font-weight:600;font-family:'IBM Plex Mono',monospace;margin:4px 0 2px}
+.stat .sub{font-size:12px;color:var(--muted)}
+.stat.warn .num{color:var(--orange)} .stat.bad .num{color:var(--red)} .stat.ok .num{color:var(--green)}
+
+/* panels */
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin-bottom:20px}
+.panel-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.panel-head h3{font-size:15px;font-weight:700}
+.panel-head .spacer{flex:1}
+select,input[type=text],input[type=date],input[type=time],input[type=search],textarea{font-family:inherit;font-size:13.5px;border:1px solid var(--line);border-radius:9px;padding:8px 11px;background:#fff;color:var(--ink)}
+select:hover{border-color:#d5cbb4}
+
+/* chart */
+.chart-wrap{display:grid;grid-template-columns:1fr 260px;gap:22px}
+@media(max-width:900px){.chart-wrap{grid-template-columns:1fr}}
+.bars{display:flex;align-items:flex-end;gap:10px;height:190px;padding-top:10px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;cursor:pointer;border-radius:8px}
+.bar-col:hover{background:#faf5e6}
+.bd-row{display:flex;align-items:center;gap:9px;font-size:13px;margin-bottom:9px;cursor:pointer;border-radius:6px}
+.bd-row:hover{color:var(--gold)}
+.bar-col .val{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted)}
+.bar-col .bar{width:100%;max-width:38px;background:linear-gradient(180deg,#d9a416,var(--gold));border-radius:6px 6px 3px 3px;min-height:3px;transition:height .4s ease}
+.bar-col .bar.zero{background:var(--line)}
+.bar-col .m{font-size:11px;color:var(--muted)}
+.bar-col.now .m{color:var(--gold);font-weight:700}
+.breakdown h4{font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
+.bd-row .dot{width:9px;height:9px;border-radius:50%}
+.bd-row .n{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:12.5px}
+.bd-track{height:5px;border-radius:4px;background:#f1ecdf;margin:-3px 0 10px 18px;overflow:hidden}
+.bd-track i{display:block;height:100%;border-radius:4px}
+
+/* status badges */
+.badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.b-sent{background:var(--blue-soft);color:var(--blue)}
+.b-wait{background:var(--orange-soft);color:var(--orange)}
+.b-follow{background:var(--gold-soft);color:var(--gold);border:1px solid var(--gold-line)}
+.b-done{background:var(--green-soft);color:var(--green)}
+.b-over{background:var(--red-soft);color:var(--red)}
+
+/* table */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:11px 10px;border-bottom:1px solid #f2ede0;vertical-align:top}
+tr:hover td{background:#fdfbf4}
+td .doc-name{font-weight:600;cursor:pointer}
+td .doc-name:hover{color:var(--gold)}
+td .sub{font-size:12px;color:var(--muted);margin-top:2px}
+.icon-btn{border:none;background:none;cursor:pointer;font-size:15px;padding:4px 6px;border-radius:7px;color:var(--muted)}
+.icon-btn:hover{background:#f4efe2;color:var(--ink)}
+.icon-btn.del:hover{background:var(--red-soft);color:var(--red)}
+.empty{padding:40px;text-align:center;color:var(--muted);font-size:14px}
+.empty b{display:block;font-size:16px;color:var(--ink);margin-bottom:6px}
+
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(30,26,18,.45);display:none;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:50;overflow:auto}
+.overlay.show{display:flex}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:620px;padding:24px 26px;box-shadow:0 24px 60px rgba(0,0,0,.2)}
+.modal h3{font-size:17px;margin-bottom:16px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px 16px}
+.form-grid .full{grid-column:1/-1}
+label{display:block;font-size:12px;font-weight:600;color:#6e6552;margin-bottom:5px}
+.modal input,.modal select,.modal textarea{width:100%}
+textarea{resize:vertical;min-height:64px}
+.modal-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+.req::after{content:" *";color:var(--red)}
+
+/* detail / follow log */
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;font-size:13.5px;margin-bottom:16px}
+.detail-grid dt{font-size:11.5px;color:var(--muted)}
+.detail-grid dd{font-weight:500;margin-bottom:8px}
+.log-item{border-left:2px solid var(--gold-line);padding:2px 0 12px 14px;position:relative;font-size:13.5px}
+.log-item::before{content:"";position:absolute;left:-5px;top:5px;width:8px;height:8px;border-radius:50%;background:var(--gold)}
+.log-item .when{font-size:11.5px;color:var(--muted);font-family:'IBM Plex Mono',monospace}
+.log-add{display:flex;gap:8px;margin-top:12px}
+.log-add input{flex:1}
+
+/* print report */
+.print-only{display:none}
+@media print{
+  aside,.topbar .btn,.panel-head select,.panel-head input,.no-print{display:none!important}
+  body{background:#fff}
+  main{padding:0}
+  .panel,.stat{border:1px solid #ccc;break-inside:avoid}
+  .print-only{display:block;margin-bottom:14px}
+}
+@media(max-width:760px){
+  aside{display:none}
+  main{padding:16px}
+  .form-grid{grid-template-columns:1fr}
+  .detail-grid{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+</style>
+</head>
+<body>
+
+<aside>
+  <div class="brand">
+    <div class="logo">B</div>
+    <div><b>BRB Portal</b><small>Procurement System</small></div>
+  </div>
+  <div class="nav-label">Overview</div>
+  <a href="/">🏠 Dashboard หลัก</a>
+  <div class="nav-label">ระบบหลัก</div>
+  <a href="/">📊 Dashboard Bidding <span class="tag live">live</span></a>
+  <a href="/">📁 ทะเบียนสัญญา &amp; BG <span class="tag live">live</span></a>
+  <a href="/">⭐ ประเมินพึงพอใจ <span class="tag live">live</span></a>
+  <a href="/">📄 Alignment Doc <span class="tag live">live</span></a>
+  <a href="#" class="active">🔎 Document Tracking <span class="tag live">live</span></a>
+  <a href="/">📈 Vendor Register <span class="tag">dev</span></a>
+  <a href="/">🗓️ Work Planner <span class="tag">wip</span></a>
+  <div class="side-foot">Admin BRB · Administrator</div>
+</aside>
+
+<main>
+  <div class="topbar">
+    <h1>Document Tracking</h1>
+    <div class="spacer"></div>
+    <button class="btn" onclick="openHolidays()">📅 วันหยุดบริษัท</button>
+    <button class="btn" onclick="openTeam()">👥 รายชื่อทีม</button>
+    <button class="btn" onclick="exportCSV()">⬇ Export CSV</button>
+    <button class="btn" onclick="window.print()">🖨 พิมพ์รายงาน</button>
+    <button class="btn gold" onclick="openForm()">＋ บันทึกเอกสารใหม่</button>
+  </div>
+
+  <div class="print-only">
+    <h2 style="font-size:18px">รายงานติดตามเอกสาร — BRB Procurement</h2>
+    <div style="font-size:12px;color:#666" id="printMeta"></div>
+  </div>
+
+  <div class="hello no-print">
+    <div class="date" id="todayTxt"></div>
+    <h2>ติดตามเอกสารของทีม 📄</h2>
+    <p>บันทึกทุกครั้งที่ส่งเอกสาร — ส่งเมื่อไหร่ ส่งให้ใคร และติดตามถึงไหนแล้ว</p>
+    <div class="wm">DOC</div>
+  </div>
+
+  <div class="stats" id="statCards"></div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h3>สรุปเอกสารรายเดือน</h3>
+      <div class="spacer"></div>
+      <select id="chartYear" onchange="render()"></select>
+    </div>
+    <div class="chart-wrap">
+      <div class="bars" id="barChart"></div>
+      <div class="breakdown" id="breakdown"></div>
+    </div>
+  </div>
+
+  <div class="panel" id="tablePanel">
+    <div class="panel-head">
+      <h3>รายการเอกสาร</h3>
+      <div class="spacer"></div>
+      <input type="search" id="fSearch" placeholder="ค้นหาชื่อเอกสาร / ผู้รับ…" oninput="render()" style="width:200px">
+      <select id="fFactory" onchange="render()"></select>
+      <select id="fSender" onchange="render()"></select>
+      <select id="fStatus" onchange="render()">
+        <option value="">สถานะทั้งหมด</option>
+        <option value="pending">ส่งแล้ว + รอตอบกลับ</option>
+        <option value="sent">ส่งแล้ว</option>
+        <option value="wait">รอตอบกลับ</option>
+        <option value="follow">ติดตามแล้ว</option>
+        <option value="done">ปิดงาน</option>
+        <option value="over">เกินกำหนด</option>
+      </select>
+      <select id="fMonth" onchange="render()"></select>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>เลขที่</th><th>เอกสาร</th><th>ผู้ส่ง</th><th>ส่งถึง</th>
+          <th>ส่งเมื่อ</th><th>กำหนดตอบ</th><th title="นับ จ-ศ ไม่รวมวันหยุดบริษัท">วันทำการ</th><th>สถานะ</th><th>ติดตาม</th><th class="no-print"></th>
+        </tr></thead>
+        <tbody id="tblBody"></tbody>
+      </table>
+      <div class="empty" id="emptyState" style="display:none">
+        <b>ยังไม่มีเอกสารในระบบ</b>
+        กดปุ่ม "＋ บันทึกเอกสารใหม่" เพื่อเริ่มบันทึกรายการแรก
+        <div style="margin-top:14px" class="no-print"><button class="btn" onclick="seedDemo()">✨ ใส่ข้อมูลตัวอย่างให้ดูก่อน</button></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ── Modal: add/edit ── -->
+<div class="overlay" id="formOverlay">
+  <div class="modal">
+    <h3 id="formTitle">บันทึกเอกสารใหม่</h3>
+    <div class="form-grid">
+      <div class="full">
+        <label class="req">ชื่อเอกสาร / เรื่อง</label>
+        <input type="text" id="inName" placeholder="เช่น ขออนุมัติ PR จัดซื้อวัตถุดิบ Q3">
+      </div>
+      <div>
+        <label>ประเภทเอกสาร</label>
+        <select id="inType">
+          <option>บันทึกภายใน</option><option>PR / PO</option><option>สัญญา</option>
+          <option>ใบเสนอราคา</option><option>หนังสือภายนอก</option><option>อื่นๆ</option>
+        </select>
+      </div>
+      <div>
+        <label>โรงงาน / ต้นเรื่อง</label>
+        <div style="display:flex;gap:6px">
+          <select id="inFactory" style="flex:1;min-width:0"></select>
+          <button type="button" class="btn" title="จัดการรายชื่อโรงงาน" onclick="openFactory()" style="padding:8px 11px">⚙️</button>
+        </div>
+      </div>
+      <div>
+        <label class="req">ผู้ส่ง (คนในทีม)</label>
+        <div style="display:flex;gap:6px">
+          <select id="inSender" style="flex:1;min-width:0"></select>
+          <button type="button" class="btn" title="จัดการรายชื่อทีม" onclick="openTeam()" style="padding:8px 11px">⚙️</button>
+        </div>
+      </div>
+      <div>
+        <label class="req">ส่งถึง (คน/แผนก)</label>
+        <input type="text" id="inTo" placeholder="เช่น คุณสมชาย ฝ่ายบัญชี">
+      </div>
+      <div>
+        <label>ช่องทางที่ส่ง</label>
+        <select id="inChannel">
+          <option>Email</option><option>เอกสารตัวจริง</option><option>ระบบภายใน</option><option>LINE/Chat</option>
+        </select>
+      </div>
+      <div>
+        <label class="req">วันที่ส่ง</label>
+        <input type="date" id="inDate">
+      </div>
+      <div>
+        <label>เวลาที่ส่ง</label>
+        <input type="time" id="inTime">
+      </div>
+      <div>
+        <label>กำหนดตอบกลับภายใน</label>
+        <input type="date" id="inDue">
+      </div>
+      <div>
+        <label>สถานะ</label>
+        <select id="inStatus">
+          <option value="sent">ส่งแล้ว</option>
+          <option value="wait">รอตอบกลับ</option>
+          <option value="follow">ติดตามแล้ว</option>
+          <option value="done">ปิดงาน</option>
+        </select>
+      </div>
+      <div class="full">
+        <label>หมายเหตุ</label>
+        <textarea id="inNote" placeholder="รายละเอียดเพิ่มเติม…"></textarea>
+      </div>
+    </div>
+    <div id="formMsg" style="font-size:12.5px;color:var(--red);margin-top:10px;min-height:17px"></div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeForm()">ยกเลิก</button>
+      <button class="btn gold" onclick="saveDoc()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: detail + follow-up log ── -->
+<div class="overlay" id="detailOverlay">
+  <div class="modal">
+    <h3 id="dTitle"></h3>
+    <dl class="detail-grid" id="dGrid"></dl>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <b style="font-size:14px">ประวัติการติดตาม</b>
+      <span class="badge b-follow" id="dLogCount"></span>
+    </div>
+    <div id="dLogs"></div>
+    <div class="log-add">
+      <input type="text" id="logInput" placeholder="เช่น โทรตามคุณสมชาย แจ้งว่าจะเซ็นพรุ่งนี้">
+      <button class="btn gold" onclick="addLog()">＋ บันทึกการติดตาม</button>
+    </div>
+    <div class="modal-foot" style="justify-content:space-between">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" onclick="copyNotify()">📋 คัดลอกข้อความแจ้ง</button>
+        <button class="btn" onclick="emailNotify()">✉️ แจ้งทางอีเมล</button>
+      </div>
+      <button class="btn" onclick="document.getElementById('detailOverlay').classList.remove('show')">ปิด</button>
+    </div>
+    <div id="notifyMsg" style="font-size:12.5px;color:var(--green);min-height:16px;margin-top:6px"></div>
+  </div>
+</div>
+
+<!-- ── Modal: team members ── -->
+<div class="overlay" id="teamOverlay">
+  <div class="modal" style="max-width:420px">
+    <h3>จัดการรายชื่อทีม 👥</h3>
+    <p style="font-size:12.5px;color:var(--muted);margin:-8px 0 12px">รายชื่อนี้จะไปโผล่ในช่อง "ผู้ส่ง" ตอนบันทึกเอกสาร · กด 📦 เพื่อพักรายชื่อ (เช่น น้องลาออก) — ข้อมูลเอกสารไม่หายและกู้คืนชื่อได้ตลอด ลบถาวรต้องใช้รหัสผู้จัดการเท่านั้น</p>
+    <div id="teamList"></div>
+    <div class="log-add">
+      <input type="text" id="teamInput" placeholder="พิมพ์ชื่อน้องในทีม" onkeydown="if(event.key==='Enter')addMember()">
+      <button class="btn gold" onclick="addMember()">＋ เพิ่ม</button>
+    </div>
+    <div id="teamMsg" style="font-size:12.5px;margin-top:7px;min-height:17px"></div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeTeam()">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: factories ── -->
+<div class="overlay" id="factoryOverlay">
+  <div class="modal" style="max-width:420px">
+    <h3>จัดการรายชื่อโรงงาน 🏭</h3>
+    <p style="font-size:12.5px;color:var(--muted);margin:-8px 0 12px">รายชื่อนี้จะไปโผล่ในช่อง "โรงงาน / ต้นเรื่อง" ตอนบันทึกเอกสาร</p>
+    <div id="factoryList" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+    <div class="log-add">
+      <input type="text" id="factoryInput" placeholder="พิมพ์รหัส/ชื่อโรงงาน เช่น BRB" onkeydown="if(event.key==='Enter')addFactory()">
+      <button class="btn gold" onclick="addFactory()">＋ เพิ่ม</button>
+    </div>
+    <div id="factoryMsg" style="font-size:12.5px;margin-top:7px;min-height:17px"></div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeFactory()">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: company holidays ── -->
+<div class="overlay" id="holOverlay">
+  <div class="modal" style="max-width:460px">
+    <h3>วันหยุดพิเศษบริษัท 📅</h3>
+    <p style="font-size:12.5px;color:var(--muted);margin:-8px 0 12px">วันที่ใส่ตรงนี้จะถูก "ข้าม" ตอนนับวันทำการของเอกสาร (เสาร์-อาทิตย์ระบบข้ามให้อยู่แล้ว ไม่ต้องใส่)</p>
+    <div id="holList"></div>
+    <div class="log-add">
+      <input type="date" id="holDate" style="width:150px">
+      <input type="text" id="holName" placeholder="ชื่อวันหยุด เช่น หยุดชดเชยปีใหม่" onkeydown="if(event.key==='Enter')addHoliday()">
+      <button class="btn gold" onclick="addHoliday()">＋ เพิ่ม</button>
+    </div>
+    <div id="holMsg" style="font-size:12.5px;margin-top:7px;min-height:17px"></div>
+    <div class="modal-foot">
+      <button class="btn" onclick="holOverlay.classList.remove('show')">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ───────── storage ───────── */
+const KEY='brb_doc_tracking_v1';
+let docs = JSON.parse(localStorage.getItem(KEY)||'[]');
+let editId=null, detailId=null;
+const save=()=>localStorage.setItem(KEY,JSON.stringify(docs));
+
+/* team member list */
+const KEY_TEAM='brb_doc_team_v1';
+const KEY_ARCH='brb_doc_team_archived_v1';
+const MANAGER_PIN='2569'; /* ⚠ รหัสผู้จัดการสำหรับลบถาวร — เปลี่ยนตรงนี้ได้เลย */
+let team = JSON.parse(localStorage.getItem(KEY_TEAM)||'null');
+let archived = JSON.parse(localStorage.getItem(KEY_ARCH)||'[]');
+if(!team){ team=[...new Set(docs.map(d=>d.sender))].filter(Boolean); localStorage.setItem(KEY_TEAM,JSON.stringify(team)); }
+const saveTeam=()=>{ localStorage.setItem(KEY_TEAM,JSON.stringify(team)); localStorage.setItem(KEY_ARCH,JSON.stringify(archived)); };
+const docCount=name=>docs.filter(d=>d.sender===name).length;
+
+/* factory list */
+const KEY_FACT='brb_doc_factory_v1';
+const DEFAULT_FACTORIES=['BRB','BRT','SCO','PTB','WNB','BAB','SRB','KKB','MSB','CMB','SBC'];
+let factories = JSON.parse(localStorage.getItem(KEY_FACT)||'null');
+if(!factories){ factories=[...DEFAULT_FACTORIES]; localStorage.setItem(KEY_FACT,JSON.stringify(factories)); }
+const saveFact=()=>localStorage.setItem(KEY_FACT,JSON.stringify(factories));
+
+function refreshFactorySelect(cur){
+  cur = cur ?? inFactory.value;
+  inFactory.innerHTML = '<option value="">— ไม่ระบุ —</option>'+factories.map(f=>`<option>${f}</option>`).join('');
+  if(cur && !factories.includes(cur)) inFactory.insertAdjacentHTML('beforeend',`<option>${cur}</option>`);
+  inFactory.value=cur||'';
+}
+let pendingDelFactory=null;
+function openFactory(){ pendingDelFactory=null; renderFactory(); factoryMsg.textContent=''; factoryOverlay.classList.add('show'); factoryInput.focus(); }
+function closeFactory(){
+  factoryOverlay.classList.remove('show');
+  if(formOverlay.classList.contains('show')) refreshFactorySelect();
+}
+function renderFactory(){
+  factoryList.innerHTML = factories.length
+    ? factories.map((f,i)=>`<span style="display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:20px;padding:5px 6px 5px 13px;font-size:13px;font-family:'IBM Plex Mono',monospace">
+        🏭 ${f}
+        ${pendingDelFactory===i
+          ? `<button class="btn ghost-red" style="padding:2px 9px;font-size:11.5px;border-color:var(--red)" onclick="confirmDelFactory(${i})">ลบ?</button><button class="icon-btn" style="padding:2px 5px" onclick="pendingDelFactory=null;renderFactory()">✕</button>`
+          : `<button class="icon-btn del" style="padding:2px 5px;font-size:13px" title="ลบ" onclick="pendingDelFactory=${i};renderFactory()">🗑️</button>`}
+      </span>`).join('')
+    : '<div style="font-size:13px;color:var(--muted)">ยังไม่มีรายชื่อโรงงาน</div>';
+}
+function addFactory(){
+  const t=factoryInput.value.trim().toUpperCase(); if(!t)return;
+  if(factories.includes(t)){ factoryMsg.textContent='มีโรงงานนี้อยู่แล้วนะ'; factoryMsg.style.color='var(--red)'; return; }
+  factories.push(t); saveFact(); factoryInput.value=''; factoryMsg.textContent=''; renderFactory(); render();
+}
+function confirmDelFactory(i){
+  factories.splice(i,1); pendingDelFactory=null; saveFact(); renderFactory(); render();
+  factoryMsg.textContent='ลบแล้ว (เอกสารเก่าที่ระบุโรงงานนี้ไว้ยังอยู่ครบ)'; factoryMsg.style.color='var(--green)';
+}
+
+function refreshSenderSelect(cur){
+  cur = cur ?? inSender.value;
+  inSender.innerHTML = team.length
+    ? team.map(s=>`<option>${s}</option>`).join('')
+    : '<option value="">— กด ⚙️ เพิ่มรายชื่อก่อน —</option>';
+  if(cur && !team.includes(cur)) inSender.insertAdjacentHTML('afterbegin',`<option>${cur}</option>`);
+  if(cur) inSender.value=cur;
+}
+function openTeam(){ pendingDelMember=null; renderTeam(); teamMsg.textContent=''; teamOverlay.classList.add('show'); teamInput.focus(); }
+function closeTeam(){
+  teamOverlay.classList.remove('show');
+  if(formOverlay.classList.contains('show')) refreshSenderSelect();
+}
+let pendingDelMember=null, pendingPurge=null;
+function renderTeam(){
+  teamList.innerHTML = (team.length
+    ? team.map((s,i)=>`<div style="display:flex;align-items:center;gap:9px;padding:9px 4px;border-bottom:1px solid #f2ede0;font-size:14px">
+        <span>👤 ${s} <span style="font-size:11.5px;color:var(--muted)">· ${docCount(s)} เอกสาร</span></span>
+        ${pendingDelMember===i
+          ? `<button class="btn" style="margin-left:auto;padding:4px 12px;font-size:12.5px;border-color:var(--orange);color:var(--orange)" onclick="confirmArchive(${i})">พักรายชื่อ?</button>
+             <button class="icon-btn" title="ยกเลิก" onclick="pendingDelMember=null;renderTeam()">✕</button>`
+          : `<button class="icon-btn del" style="margin-left:auto" title="พักรายชื่อ (ไม่ลบข้อมูล)" onclick="pendingDelMember=${i};pendingPurge=null;renderTeam()">📦</button>`}
+      </div>`).join('')
+    : '<div style="font-size:13px;color:var(--muted);padding:8px 0">ยังไม่มีรายชื่อในทีมเลย เพิ่มชื่อแรกได้ด้านล่าง</div>')
+  + renderArchived();
+}
+function renderArchived(){
+  if(!archived.length) return '';
+  return `<div style="margin-top:14px">
+    <div style="font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">📦 พักรายชื่อไว้ (${archived.length}) — เช่น น้องที่ลาออกแล้ว</div>
+    ${archived.map((s,i)=>`<div style="display:flex;align-items:center;gap:9px;padding:8px 4px;border-bottom:1px dashed #eee6d4;font-size:13.5px;color:#8a8172">
+      👤 ${s} <span style="font-size:11.5px">· ${docCount(s)} เอกสาร</span>
+      <span style="margin-left:auto;display:flex;gap:6px;align-items:center">
+      ${pendingPurge===i
+        ? `<input type="password" id="pinInput" placeholder="รหัสผู้จัดการ" style="width:110px;padding:4px 9px;font-size:12.5px" onkeydown="if(event.key==='Enter')purgeMember(${i})">
+           <button class="btn ghost-red" style="padding:4px 10px;font-size:12px;border-color:var(--red)" onclick="purgeMember(${i})">ลบถาวร</button>
+           <button class="icon-btn" title="ยกเลิก" onclick="pendingPurge=null;renderTeam()">✕</button>`
+        : `<button class="btn" style="padding:3px 10px;font-size:12px" onclick="restoreMember(${i})">↩ กู้คืน</button>
+           <button class="icon-btn del" title="ลบถาวร (ต้องใช้รหัสผู้จัดการ)" onclick="pendingPurge=${i};pendingDelMember=null;renderTeam();document.getElementById('pinInput')?.focus()">🔒🗑️</button>`}
+      </span>
+    </div>`).join('')}
+  </div>`;
+}
+function confirmArchive(i){
+  archived.push(team[i]); team.splice(i,1); pendingDelMember=null;
+  saveTeam(); renderTeam(); render();
+  teamMsg.textContent='พักรายชื่อแล้ว — ชื่อและเอกสารทั้งหมดยังอยู่ครบ กู้คืนได้ตลอด'; teamMsg.style.color='var(--green)';
+}
+function restoreMember(i){
+  team.push(archived[i]); archived.splice(i,1); pendingPurge=null;
+  saveTeam(); renderTeam(); render();
+  teamMsg.textContent='กู้คืนกลับเข้าทีมแล้ว'; teamMsg.style.color='var(--green)';
+}
+function purgeMember(i){
+  const pin=document.getElementById('pinInput')?.value||'';
+  if(pin!==MANAGER_PIN){
+    teamMsg.textContent='รหัสผู้จัดการไม่ถูกต้อง — ลบถาวรได้เฉพาะผู้จัดการนะ'; teamMsg.style.color='var(--red)'; return;
+  }
+  const n=docCount(archived[i]);
+  archived.splice(i,1); pendingPurge=null;
+  saveTeam(); renderTeam(); render();
+  teamMsg.textContent=`ลบชื่อออกถาวรแล้ว${n?` (เอกสาร ${n} รายการที่ Stamp ไว้ยังอยู่ในตารางครบนะ)`:''}`; teamMsg.style.color='var(--green)';
+}
+function addMember(){
+  const t=teamInput.value.trim(); if(!t)return;
+  if(team.includes(t)){ teamMsg.textContent='มีชื่อนี้อยู่แล้วนะ'; teamMsg.style.color='var(--red)'; return; }
+  if(archived.includes(t)){
+    archived.splice(archived.indexOf(t),1); team.push(t); saveTeam(); teamInput.value='';
+    teamMsg.textContent='ชื่อนี้อยู่ในรายชื่อที่พักไว้ เลยกู้คืนกลับเข้าทีมให้เลย'; teamMsg.style.color='var(--green)';
+    renderTeam(); render(); return;
+  }
+  team.push(t); saveTeam(); teamInput.value=''; teamMsg.textContent=''; pendingDelMember=null; renderTeam(); render();
+}
+
+const TH_MONTHS=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const STATUS={sent:['ส่งแล้ว','b-sent'],wait:['รอตอบกลับ','b-wait'],follow:['ติดตามแล้ว','b-follow'],done:['ปิดงาน','b-done'],over:['เกินกำหนด','b-over']};
+const todayISO=()=>{const n=new Date();return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;};
+const buddhist=y=>y; // แสดงปี ค.ศ.
+
+/* company holidays + นับวันทำการ */
+const KEY_HOL='brb_doc_holidays_v1';
+let holidays = JSON.parse(localStorage.getItem(KEY_HOL)||'[]'); /* [{date,name}] */
+const saveHol=()=>localStorage.setItem(KEY_HOL,JSON.stringify(holidays));
+const isoLocal=dt=>`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+function workdaysBetween(fromISO,toISO){
+  if(!fromISO||!toISO||toISO<=fromISO) return 0;
+  const hs=new Set(holidays.map(h=>h.date));
+  let n=0; const d=new Date(fromISO+'T00:00:00'); const end=new Date(toISO+'T00:00:00');
+  d.setDate(d.getDate()+1);
+  while(d<=end){
+    const dow=d.getDay();
+    if(dow!==0 && dow!==6 && !hs.has(isoLocal(d))) n++;
+    d.setDate(d.getDate()+1);
+  }
+  return n;
+}
+const agingDays=d=>workdaysBetween(d.date, d.closedAt||todayISO());
+function updateClosed(d){
+  if(d.status==='done'){ if(!d.closedAt) d.closedAt=todayISO(); }
+  else delete d.closedAt;
+}
+let pendingDelHol=null;
+function openHolidays(){ pendingDelHol=null; renderHolidays(); holMsg.textContent=''; holDate.value=''; holOverlay.classList.add('show'); }
+function renderHolidays(){
+  const sorted=[...holidays].sort((a,b)=>a.date.localeCompare(b.date));
+  holList.innerHTML = sorted.length
+    ? sorted.map(h=>{
+        const i=holidays.indexOf(h);
+        return `<div style="display:flex;align-items:center;gap:9px;padding:8px 4px;border-bottom:1px solid #f2ede0;font-size:13.5px">
+          <span class="mono" style="font-size:12.5px;color:var(--gold)">${fmtDate(h.date)}</span> ${h.name||''}
+          ${pendingDelHol===i
+            ? `<button class="btn ghost-red" style="margin-left:auto;padding:3px 10px;font-size:12px;border-color:var(--red)" onclick="confirmDelHol(${i})">ลบเลย?</button><button class="icon-btn" onclick="pendingDelHol=null;renderHolidays()">✕</button>`
+            : `<button class="icon-btn del" style="margin-left:auto" title="ลบ" onclick="pendingDelHol=${i};renderHolidays()">🗑️</button>`}
+        </div>`;
+      }).join('')
+    : '<div style="font-size:13px;color:var(--muted);padding:8px 0">ยังไม่มีวันหยุดพิเศษ เพิ่มวันแรกได้ด้านล่าง</div>';
+}
+function addHoliday(){
+  if(!holDate.value){ holMsg.textContent='เลือกวันที่ก่อนนะ'; holMsg.style.color='var(--red)'; return; }
+  if(holidays.some(h=>h.date===holDate.value)){ holMsg.textContent='วันนี้มีอยู่แล้วนะ'; holMsg.style.color='var(--red)'; return; }
+  holidays.push({date:holDate.value,name:holName.value.trim()});
+  saveHol(); holDate.value=''; holName.value=''; holMsg.textContent=''; renderHolidays(); render();
+}
+function confirmDelHol(i){
+  holidays.splice(i,1); pendingDelHol=null; saveHol(); renderHolidays(); render();
+  holMsg.textContent='ลบวันหยุดแล้ว ระบบนับวันทำการใหม่ให้อัตโนมัติ'; holMsg.style.color='var(--green)';
+}
+
+function effStatus(d){
+  if(d.status!=='done' && d.due && d.due<todayISO()) return 'over';
+  return d.status;
+}
+function fmtDate(iso,time){
+  if(!iso) return '—';
+  const [y,m,dd]=iso.split('-');
+  return `${+dd} ${TH_MONTHS[+m-1]} ${buddhist(+y)}`+(time?` · ${time} น.`:'');
+}
+function docNo(d){ return d.no; }
+function nextNo(dateISO){
+  const y=buddhist(+dateISO.slice(0,4))%100;
+  const seq=docs.filter(x=>x.no&&x.no.startsWith(`DOC-${y}`)).length+1;
+  return `DOC-${y}-${String(seq).padStart(3,'0')}`;
+}
+
+/* ───────── form ───────── */
+function openForm(id){
+  editId=id||null;
+  document.getElementById('formTitle').textContent=id?'แก้ไขเอกสาร':'บันทึกเอกสารใหม่';
+  const d=id?docs.find(x=>x.id===id):null;
+  inName.value=d?.name||''; inType.value=d?.type||'บันทึกภายใน';
+  inTo.value=d?.to||'';
+  inChannel.value=d?.channel||'Email';
+  inDate.value=d?.date||todayISO();
+  inTime.value=d?.time||new Date().toTimeString().slice(0,5);
+  inDue.value=d?.due||''; inStatus.value=d?.status||'sent'; inNote.value=d?.note||'';
+  refreshSenderSelect(d?.sender||team[0]||'');
+  refreshFactorySelect(d?.factory||'');
+  formOverlay.classList.add('show'); inName.focus();
+}
+function closeForm(){formOverlay.classList.remove('show')}
+function saveDoc(){
+  if(!inName.value.trim()||!inSender.value.trim()||!inTo.value.trim()||!inDate.value){
+    formMsg.textContent='⚠ กรอกชื่อเอกสาร เลือกผู้ส่ง กรอกผู้รับ และวันที่ส่งก่อนนะ (ถ้ายังไม่มีรายชื่อทีม กด ⚙️ เพิ่มก่อน)'; return;
+  }
+  formMsg.textContent='';
+  if(editId){
+    const d=docs.find(x=>x.id===editId);
+    Object.assign(d,{name:inName.value.trim(),type:inType.value,factory:inFactory.value,sender:inSender.value.trim(),to:inTo.value.trim(),channel:inChannel.value,date:inDate.value,time:inTime.value,due:inDue.value,status:inStatus.value,note:inNote.value.trim()});
+  }else{
+    docs.push({id:Date.now().toString(36),no:nextNo(inDate.value),name:inName.value.trim(),type:inType.value,factory:inFactory.value,sender:inSender.value.trim(),to:inTo.value.trim(),channel:inChannel.value,date:inDate.value,time:inTime.value,due:inDue.value,status:inStatus.value,note:inNote.value.trim(),logs:[]});
+  }
+  updateClosed(editId?docs.find(x=>x.id===editId):docs[docs.length-1]);
+  save(); closeForm(); render();
+}
+let pendingDelDoc=null;
+function delDoc(id){ pendingDelDoc=id; render(); }
+function confirmDelDoc(id){ docs=docs.filter(x=>x.id!==id); pendingDelDoc=null; save(); render(); }
+function setStatus(id,s){const d=docs.find(x=>x.id===id);d.status=s;updateClosed(d);save();render();}
+
+/* ───────── detail + logs ───────── */
+function openDetail(id){
+  detailId=id; const d=docs.find(x=>x.id===id); const st=effStatus(d);
+  dTitle.textContent=`${d.no} · ${d.name}`;
+  dGrid.innerHTML=`
+    <div><dt>โรงงาน / ต้นเรื่อง</dt><dd>${d.factory||'—'}</dd></div>
+    <div><dt>ประเภท</dt><dd>${d.type}</dd></div>
+    <div><dt>ผู้ส่ง</dt><dd>${d.sender}</dd></div>
+    <div><dt>ส่งถึง</dt><dd>${d.to}</dd></div>
+    <div><dt>ส่งเมื่อ</dt><dd>${fmtDate(d.date,d.time)}</dd></div>
+    <div><dt>ช่องทาง</dt><dd>${d.channel}</dd></div>
+    <div><dt>กำหนดตอบกลับ</dt><dd>${fmtDate(d.due)}</dd></div>
+    <div><dt>สถานะ</dt><dd><span class="badge ${STATUS[st][1]}">${STATUS[st][0]}</span></dd></div>
+    <div><dt>ระยะเวลา</dt><dd>${agingDays(d)} วันทำการ${d.closedAt?` (ปิดงาน ${fmtDate(d.closedAt)})`:' และยังนับอยู่'}<div style="font-size:11px;color:var(--muted);font-weight:400">นับ จ-ศ ไม่รวมวันหยุดบริษัท</div></dd></div>
+    ${d.note?`<div style="grid-column:1/-1"><dt>หมายเหตุ</dt><dd>${d.note}</dd></div>`:''}`;
+  renderLogs(d);
+  detailOverlay.classList.add('show');
+}
+function renderLogs(d){
+  dLogCount.textContent=`${(d.logs||[]).length} ครั้ง`;
+  dLogs.innerHTML=(d.logs||[]).length
+    ? d.logs.map(l=>`<div class="log-item"><div class="when">${fmtDate(l.date)} · ${l.time} น.</div>${l.text}</div>`).join('')
+    : '<div style="font-size:13px;color:var(--muted);padding:6px 0 12px">ยังไม่เคยติดตามเอกสารนี้เลย</div>';
+}
+function addLog(){
+  const t=logInput.value.trim(); if(!t)return;
+  const d=docs.find(x=>x.id===detailId);
+  d.logs=d.logs||[];
+  d.logs.push({date:todayISO(),time:new Date().toTimeString().slice(0,5),text:t});
+  if(d.status==='sent'||d.status==='wait') d.status='follow';
+  logInput.value=''; save(); renderLogs(d); render();
+}
+
+function notifyText(d){
+  const st=effStatus(d);
+  const lastLog=(d.logs||[]).length?d.logs[d.logs.length-1]:null;
+  return [
+    `📄 แจ้งสถานะเอกสาร${d.factory?` (${d.factory})`:''}`,
+    `เลขที่: ${d.no}`,
+    `เรื่อง: ${d.name}`,
+    `ส่งต่อถึง: ${d.to}`,
+    `เมื่อ: ${fmtDate(d.date,d.time)} · ทาง${d.channel}`,
+    d.due?`กำหนดตอบกลับ: ${fmtDate(d.due)}`:null,
+    `สถานะล่าสุด: ${STATUS[st][0]}`,
+    `รวมเวลา: ${agingDays(d)} วันทำการ (นับ จ-ศ ไม่รวมวันหยุดบริษัท)`,
+    lastLog?`ติดตามล่าสุด: ${fmtDate(lastLog.date)} — ${lastLog.text}`:null,
+    ``,
+    `— Document Tracking · BRB Procurement Portal`
+  ].filter(x=>x!==null).join('\n');
+}
+function copyNotify(){
+  const d=docs.find(x=>x.id===detailId);
+  const t=notifyText(d);
+  const done=()=>{notifyMsg.textContent='คัดลอกแล้ว! เอาไปวางใน LINE หรืออีเมลได้เลย';setTimeout(()=>notifyMsg.textContent='',3000);};
+  if(navigator.clipboard?.writeText){ navigator.clipboard.writeText(t).then(done).catch(()=>fallbackCopy(t,done)); }
+  else fallbackCopy(t,done);
+}
+function fallbackCopy(t,done){
+  const ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta);
+  ta.select(); document.execCommand('copy'); ta.remove(); done();
+}
+function emailNotify(){
+  const d=docs.find(x=>x.id===detailId);
+  location.href=`mailto:?subject=${encodeURIComponent(`แจ้งสถานะเอกสาร ${d.no}${d.factory?` (${d.factory})`:''} — ${d.name}`)}&body=${encodeURIComponent(notifyText(d))}`;
+}
+
+/* ───────── dashboard + table ───────── */
+function render(){
+  const now=new Date();
+  todayTxt.textContent=`วัน${['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'][now.getDay()]}ที่ ${now.getDate()} ${TH_MONTHS[now.getMonth()]} ${buddhist(now.getFullYear())}`;
+  printMeta.textContent=`พิมพ์เมื่อ ${now.toLocaleString('th-TH')}`;
+
+  /* year select */
+  const years=[...new Set(docs.map(d=>+d.date.slice(0,4)))].sort();
+  if(!years.includes(now.getFullYear()))years.push(now.getFullYear());
+  const selY=+(chartYear.value||now.getFullYear());
+  chartYear.innerHTML=years.map(y=>`<option value="${y}" ${y===selY?'selected':''}>ปี ${buddhist(y)}</option>`).join('');
+
+  /* month filter */
+  const selM=fMonth.value;
+  fMonth.innerHTML=`<option value="">ทุกเดือน</option>`+TH_MONTHS.map((m,i)=>`<option value="${i+1}" ${selM==i+1?'selected':''}>${m}</option>`).join('');
+  /* sender filter */
+  const selS=fSender.value;
+  fSender.innerHTML=`<option value="">ผู้ส่งทั้งหมด</option>`+[...new Set([...team,...docs.map(d=>d.sender)])].filter(Boolean).map(s=>`<option ${selS===s?'selected':''}>${s}</option>`).join('');
+  /* factory filter */
+  const selF=fFactory.value;
+  fFactory.innerHTML=`<option value="">โรงงานทั้งหมด</option>`+[...new Set([...factories,...docs.map(d=>d.factory)])].filter(Boolean).map(f=>`<option ${selF===f?'selected':''}>${f}</option>`).join('');
+
+  /* stats */
+  const thisMonth=docs.filter(d=>+d.date.slice(0,4)===now.getFullYear()&&+d.date.slice(5,7)===now.getMonth()+1).length;
+  const cnt=s=>docs.filter(d=>effStatus(d)===s).length;
+  statCards.innerHTML=`
+    <div class="stat" onclick="filterStatus('')" title="คลิกดูเอกสารทั้งหมด"><div class="lb">เอกสารทั้งหมด</div><div class="num">${docs.length}</div><div class="sub">↑ +${thisMonth} เดือนนี้</div></div>
+    <div class="stat warn" onclick="filterStatus('pending')" title="คลิกดูรายการที่รอตอบกลับ"><div class="lb">รอตอบกลับ</div><div class="num">${cnt('wait')+cnt('sent')}</div><div class="sub">ยังไม่ปิดงาน</div></div>
+    <div class="stat bad" onclick="filterStatus('over')" title="คลิกดูรายการเกินกำหนด"><div class="lb">เกินกำหนด</div><div class="num">${cnt('over')}</div><div class="sub">⚠ ต้องรีบตาม</div></div>
+    <div class="stat ok" onclick="filterStatus('done')" title="คลิกดูรายการที่ปิดงานแล้ว"><div class="lb">ปิดงานแล้ว</div><div class="num">${cnt('done')}</div><div class="sub">${docs.length?Math.round(cnt('done')/docs.length*100):0}% ของทั้งหมด</div></div>`;
+
+  /* bar chart */
+  const byM=Array(12).fill(0);
+  docs.forEach(d=>{if(+d.date.slice(0,4)===selY)byM[+d.date.slice(5,7)-1]++});
+  const max=Math.max(...byM,1);
+  barChart.innerHTML=byM.map((v,i)=>`
+    <div class="bar-col ${selY===now.getFullYear()&&i===now.getMonth()?'now':''}" onclick="filterMonth(${i+1})" title="คลิกดูเอกสารเดือน ${TH_MONTHS[i]}">
+      <div class="val">${v||''}</div>
+      <div class="bar ${v?'':'zero'}" style="height:${v?Math.max(v/max*100,4):2}%"></div>
+      <div class="m">${TH_MONTHS[i]}</div>
+    </div>`).join('');
+
+  /* breakdown */
+  const order=['sent','wait','follow','over','done'];
+  const colors={sent:'var(--blue)',wait:'var(--orange)',follow:'var(--gold)',over:'var(--red)',done:'var(--green)'};
+  breakdown.innerHTML=`<h4>สถานะทั้งหมด (ปี ${buddhist(selY)})</h4>`+order.map(s=>{
+    const n=docs.filter(d=>+d.date.slice(0,4)===selY&&effStatus(d)===s).length;
+    const tot=docs.filter(d=>+d.date.slice(0,4)===selY).length||1;
+    return `<div class="bd-row" onclick="filterStatus('${s}')" title="คลิกดูรายการ${STATUS[s][0]}"><span class="dot" style="background:${colors[s]}"></span>${STATUS[s][0]}<span class="n">${n}</span></div>
+    <div class="bd-track"><i style="width:${n/tot*100}%;background:${colors[s]}"></i></div>`;
+  }).join('');
+
+  /* table */
+  const q=fSearch.value.toLowerCase();
+  let rows=docs.filter(d=>
+    (!q||d.name.toLowerCase().includes(q)||d.to.toLowerCase().includes(q)||d.no.toLowerCase().includes(q))
+    &&(!fSender.value||d.sender===fSender.value)
+    &&(!fFactory.value||d.factory===fFactory.value)
+    &&(!fStatus.value||(fStatus.value==='pending'?['sent','wait'].includes(effStatus(d)):effStatus(d)===fStatus.value))
+    &&(!fMonth.value||+d.date.slice(5,7)===+fMonth.value)
+  ).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+
+  emptyState.style.display=docs.length?'none':'block';
+  tblBody.innerHTML=rows.map(d=>{
+    const st=effStatus(d);
+    return `<tr>
+      <td class="mono" style="font-size:12px">${d.no}</td>
+      <td><span class="doc-name" onclick="openDetail('${d.id}')">${d.name}</span><div class="sub">${d.factory?`🏭 ${d.factory} · `:''}${d.type} · ${d.channel}</div></td>
+      <td>${d.sender}</td>
+      <td>${d.to}</td>
+      <td style="white-space:nowrap">${fmtDate(d.date,d.time)}</td>
+      <td style="white-space:nowrap">${fmtDate(d.due)}</td>
+      <td style="text-align:center"><span class="mono" style="font-size:13px;${st==='over'?'color:var(--red);font-weight:600':(d.closedAt?'color:var(--green)':'')}">${agingDays(d)}</span><div class="sub" style="font-size:10.5px">${d.closedAt?'จนปิดงาน':'วัน'}</div></td>
+      <td><span class="badge ${STATUS[st][1]}" style="cursor:pointer" onclick="cycleStatus('${d.id}')" title="คลิกเพื่อเปลี่ยนสถานะ">${STATUS[st][0]}</span></td>
+      <td><span class="badge b-follow" style="cursor:pointer" onclick="openDetail('${d.id}')">${(d.logs||[]).length} ครั้ง</span></td>
+      <td class="no-print" style="white-space:nowrap">
+        ${pendingDelDoc===d.id
+          ? `<button class="btn ghost-red" style="padding:3px 10px;font-size:12px;border-color:var(--red)" onclick="confirmDelDoc('${d.id}')">ลบเลย?</button>
+             <button class="icon-btn" title="ยกเลิก" onclick="pendingDelDoc=null;render()">✕</button>`
+          : `<button class="icon-btn" title="แก้ไข" onclick="openForm('${d.id}')">✏️</button>
+             <button class="icon-btn del" title="ลบ" onclick="delDoc('${d.id}')">🗑️</button>`}
+      </td>
+    </tr>`;
+  }).join('');
+}
+function filterStatus(s){
+  fStatus.value=s; render();
+  tablePanel.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function filterMonth(m){
+  fMonth.value = (fMonth.value===String(m)) ? '' : String(m); /* กดซ้ำเดือนเดิม = ยกเลิกกรอง */
+  render();
+  tablePanel.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function cycleStatus(id){
+  const flow=['sent','wait','follow','done'];
+  const d=docs.find(x=>x.id===id);
+  d.status=flow[(flow.indexOf(d.status)+1)%flow.length];
+  updateClosed(d);
+  save();render();
+}
+
+/* ───────── export / demo ───────── */
+function exportCSV(){
+  const head=['เลขที่','ชื่อเอกสาร','ประเภท','โรงงาน','ผู้ส่ง','ส่งถึง','ช่องทาง','วันที่ส่ง','เวลา','กำหนดตอบ','สถานะ','วันทำการ','วันที่ปิดงาน','จำนวนติดตาม','หมายเหตุ'];
+  const rows=docs.map(d=>[d.no,d.name,d.type,d.factory||'',d.sender,d.to,d.channel,d.date,d.time,d.due||'',STATUS[effStatus(d)][0],agingDays(d),d.closedAt||'',(d.logs||[]).length,d.note||'']);
+  const csv='\uFEFF'+[head,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download=`doc-tracking-${todayISO()}.csv`; a.click();
+}
+function seedDemo(){
+  const y=new Date().getFullYear(),m=String(new Date().getMonth()+1).padStart(2,'0');
+  const demo=[
+    {name:'ขออนุมัติ PR จัดซื้อวัตถุดิบ Q3',type:'PR / PO',sender:'น้องแนน',to:'คุณสมชาย ฝ่ายจัดซื้อ',channel:'ระบบภายใน',date:`${y}-${m}-02`,time:'09:15',due:`${y}-${m}-10`,status:'wait',logs:[]},
+    {name:'สัญญาจ้างผู้รับเหมา โครงการ A',type:'สัญญา',sender:'น้องบีม',to:'ฝ่ายกฎหมาย',channel:'เอกสารตัวจริง',date:`${y}-${m}-03`,time:'14:30',due:`${y}-${m}-05`,status:'follow',logs:[{date:`${y}-${m}-06`,time:'10:00',text:'โทรตามฝ่ายกฎหมาย แจ้งว่ากำลังรีวิว'}]},
+    {name:'ใบเสนอราคา Vendor ใหม่ บ.สยามเทคโนโลยี',type:'ใบเสนอราคา',sender:'น้องแนน',to:'คุณวิชัย ผจก.แผนก',channel:'Email',date:`${y}-${m}-05`,time:'11:00',due:'',status:'done',logs:[]},
+  ];
+  demo.forEach(d=>{docs.push({id:Math.random().toString(36).slice(2),no:nextNo(d.date),...d})});
+  demo.forEach(d=>{ if(!team.includes(d.sender)) team.push(d.sender); });
+  saveTeam(); save();render();
+}
+
+render();
+</script>
+</body>
+</html>
