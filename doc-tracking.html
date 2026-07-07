@@ -91,6 +91,16 @@ select:hover{border-color:#d5cbb4}
 .bd-track{height:5px;border-radius:4px;background:#f1ecdf;margin:-3px 0 10px 18px;overflow:hidden}
 .bd-track i{display:block;height:100%;border-radius:4px}
 
+/* factory ranking */
+.rank-row{display:flex;align-items:center;gap:12px;font-size:13.5px;padding:7px 6px;border-radius:9px;cursor:pointer}
+.rank-row:hover{background:#fdfbf4;color:var(--gold)}
+.rank-row .rk{width:28px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--muted)}
+.rank-row .nm{width:150px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank-row .rank-track{flex:1;height:9px;border-radius:6px;background:#f1ecdf;overflow:hidden}
+.rank-row .rank-track i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,#d9a416,var(--gold));transition:width .4s ease}
+.rank-row .cnt{width:56px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:13px}
+.rank-row .pct{width:44px;text-align:right;font-size:11.5px;color:var(--muted)}
+
 /* status badges */
 .badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap}
 .b-sent{background:var(--blue-soft);color:var(--blue)}
@@ -212,6 +222,15 @@ textarea{resize:vertical;min-height:64px}
     </div>
   </div>
 
+  <div class="panel">
+    <div class="panel-head">
+      <h3>🏭 อันดับโรงงานที่ส่งเอกสารเข้ามา</h3>
+      <div class="spacer"></div>
+      <span style="font-size:12px;color:var(--muted)" id="rankYearLabel"></span>
+    </div>
+    <div id="factoryRank"></div>
+  </div>
+
   <div class="panel" id="tablePanel">
     <div class="panel-head">
       <h3>รายการเอกสาร</h3>
@@ -307,6 +326,10 @@ textarea{resize:vertical;min-height:64px}
           <option value="follow">ติดตามแล้ว</option>
           <option value="done">ปิดงาน</option>
         </select>
+      </div>
+      <div class="full">
+        <label>ลิงก์เอกสาร 📎 (วาง URL จาก SharePoint / OneDrive / Google Drive)</label>
+        <input type="text" id="inLink" placeholder="เช่น https://brb.sharepoint.com/...">
       </div>
       <div class="full">
         <label>หมายเหตุ</label>
@@ -608,7 +631,7 @@ function openForm(id){
   inChannel.value=d?.channel||'Email';
   inDate.value=d?.date||todayISO();
   inTime.value=d?.time||new Date().toTimeString().slice(0,5);
-  inDue.value=d?.due||''; inStatus.value=d?.status||'sent'; inNote.value=d?.note||'';
+  inDue.value=d?.due||''; inStatus.value=d?.status||'sent'; inNote.value=d?.note||''; inLink.value=d?.link||'';
   refreshSenderSelect(d?.sender||team[0]||'');
   refreshFactorySelect(d?.factory||'');
   formOverlay.classList.add('show'); inName.focus();
@@ -619,11 +642,13 @@ function saveDoc(){
     formMsg.textContent='⚠ กรอกชื่อเอกสาร เลือกผู้ส่ง กรอกผู้รับ และวันที่ส่งก่อนนะ (ถ้ายังไม่มีรายชื่อทีม กด ⚙️ เพิ่มก่อน)'; return;
   }
   formMsg.textContent='';
+  const normLink=u=>{u=u.trim();return u&&!/^https?:\/\//i.test(u)?'https://'+u:u;};
+  const linkVal=normLink(inLink.value);
   if(editId){
     const d=docs.find(x=>x.id===editId);
-    Object.assign(d,{name:inName.value.trim(),type:inType.value,factory:inFactory.value,sender:inSender.value.trim(),to:inTo.value.trim(),channel:inChannel.value,date:inDate.value,time:inTime.value,due:inDue.value,status:inStatus.value,note:inNote.value.trim()});
+    Object.assign(d,{name:inName.value.trim(),type:inType.value,factory:inFactory.value,sender:inSender.value.trim(),to:inTo.value.trim(),channel:inChannel.value,date:inDate.value,time:inTime.value,due:inDue.value,status:inStatus.value,note:inNote.value.trim(),link:linkVal});
   }else{
-    docs.push({id:Date.now().toString(36),no:nextNo(inDate.value),name:inName.value.trim(),type:inType.value,factory:inFactory.value,sender:inSender.value.trim(),to:inTo.value.trim(),channel:inChannel.value,date:inDate.value,time:inTime.value,due:inDue.value,status:inStatus.value,note:inNote.value.trim(),logs:[]});
+    docs.push({id:Date.now().toString(36),no:nextNo(inDate.value),name:inName.value.trim(),type:inType.value,factory:inFactory.value,sender:inSender.value.trim(),to:inTo.value.trim(),channel:inChannel.value,date:inDate.value,time:inTime.value,due:inDue.value,status:inStatus.value,note:inNote.value.trim(),link:linkVal,logs:[]});
   }
   updateClosed(editId?docs.find(x=>x.id===editId):docs[docs.length-1]);
   save(); closeForm(); render();
@@ -647,6 +672,7 @@ function openDetail(id){
     <div><dt>กำหนดตอบกลับ</dt><dd>${fmtDate(d.due)}</dd></div>
     <div><dt>สถานะ</dt><dd><span class="badge ${STATUS[st][1]}">${STATUS[st][0]}</span></dd></div>
     <div><dt>ระยะเวลา</dt><dd>${agingDays(d)} วันทำการ${d.closedAt?` (ปิดงาน ${fmtDate(d.closedAt)})`:' และยังนับอยู่'}<div style="font-size:11px;color:var(--muted);font-weight:400">นับ จ-ศ ไม่รวมวันหยุดบริษัท</div></dd></div>
+    ${d.link?`<div style="grid-column:1/-1"><dt>ลิงก์เอกสาร</dt><dd><a href="${d.link}" target="_blank" rel="noopener" style="color:var(--gold);word-break:break-all">📎 ${d.link}</a></dd></div>`:''}
     ${d.note?`<div style="grid-column:1/-1"><dt>หมายเหตุ</dt><dd>${d.note}</dd></div>`:''}`;
   renderLogs(d);
   detailOverlay.classList.add('show');
@@ -679,6 +705,7 @@ function notifyText(d){
     `สถานะล่าสุด: ${STATUS[st][0]}`,
     `รวมเวลา: ${agingDays(d)} วันทำการ (นับ จ-ศ ไม่รวมวันหยุดบริษัท)`,
     lastLog?`ติดตามล่าสุด: ${fmtDate(lastLog.date)} — ${lastLog.text}`:null,
+    d.link?`ลิงก์เอกสาร: ${d.link}`:null,
     ``,
     `— Document Tracking · BRB Procurement Portal`
   ].filter(x=>x!==null).join('\n');
@@ -750,6 +777,7 @@ function render(){
     return `<div class="bd-row" onclick="filterStatus('${s}')" title="คลิกดูรายการ${STATUS[s][0]}"><span class="dot" style="background:${colors[s]}"></span>${STATUS[s][0]}<span class="n">${n}</span></div>
     <div class="bd-track"><i style="width:${n/tot*100}%;background:${colors[s]}"></i></div>`;
   }).join('');
+  renderFactoryRank(selY);
 
   /* table */
   const q=fSearch.value.toLowerCase();
@@ -766,7 +794,7 @@ function render(){
     const st=effStatus(d);
     return `<tr>
       <td class="mono" style="font-size:12px">${d.no}</td>
-      <td><span class="doc-name" onclick="openDetail('${d.id}')">${d.name}</span><div class="sub">${d.factory?`🏭 ${d.factory} · `:''}${d.type} · ${d.channel}</div></td>
+      <td><span class="doc-name" onclick="openDetail('${d.id}')">${d.name}</span>${d.link?` <a href="${d.link}" target="_blank" rel="noopener" title="เปิดไฟล์เอกสาร" style="text-decoration:none;font-size:13px">📎</a>`:''}<div class="sub">${d.factory?`🏭 ${d.factory} · `:''}${d.type} · ${d.channel}</div></td>
       <td>${d.sender}</td>
       <td>${d.to}</td>
       <td style="white-space:nowrap">${fmtDate(d.date,d.time)}</td>
@@ -788,6 +816,28 @@ function filterStatus(s){
   fStatus.value=s; render();
   tablePanel.scrollIntoView({behavior:'smooth',block:'start'});
 }
+function filterFactory(f){
+  fFactory.value=f; render();
+  tablePanel.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function renderFactoryRank(selY){
+  const inYear=docs.filter(d=>+d.date.slice(0,4)===selY);
+  rankYearLabel.textContent=`ปี ${buddhist(selY)} · คลิกชื่อโรงงานเพื่อดูรายการ`;
+  const counts={};
+  inYear.forEach(d=>{const f=d.factory||'ไม่ระบุ';counts[f]=(counts[f]||0)+1;});
+  const arr=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  if(!arr.length){ factoryRank.innerHTML='<div style="font-size:13px;color:var(--muted);padding:6px 0">ยังไม่มีเอกสารในปีนี้</div>'; return; }
+  const max=arr[0][1], tot=inYear.length;
+  const medal=i=>i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1);
+  factoryRank.innerHTML=arr.slice(0,10).map(([f,n],i)=>`
+    <div class="rank-row" onclick="filterFactory('${f==='ไม่ระบุ'?'':f}')" title="คลิกดูเอกสารจาก ${f}">
+      <span class="rk">${medal(i)}</span>
+      <span class="nm">${f==='ไม่ระบุ'?'— ไม่ระบุโรงงาน —':'🏭 '+f}</span>
+      <span class="rank-track"><i style="width:${n/max*100}%"></i></span>
+      <span class="cnt">${n}</span>
+      <span class="pct">${Math.round(n/tot*100)}%</span>
+    </div>`).join('');
+}
 function filterMonth(m){
   fMonth.value = (fMonth.value===String(m)) ? '' : String(m); /* กดซ้ำเดือนเดิม = ยกเลิกกรอง */
   render();
@@ -803,8 +853,8 @@ function cycleStatus(id){
 
 /* ───────── export / demo ───────── */
 function exportCSV(){
-  const head=['เลขที่','ชื่อเอกสาร','ประเภท','โรงงาน','ผู้ส่ง','ส่งถึง','ช่องทาง','วันที่ส่ง','เวลา','กำหนดตอบ','สถานะ','วันทำการ','วันที่ปิดงาน','จำนวนติดตาม','หมายเหตุ'];
-  const rows=docs.map(d=>[d.no,d.name,d.type,d.factory||'',d.sender,d.to,d.channel,d.date,d.time,d.due||'',STATUS[effStatus(d)][0],agingDays(d),d.closedAt||'',(d.logs||[]).length,d.note||'']);
+  const head=['เลขที่','ชื่อเอกสาร','ประเภท','โรงงาน','ผู้ส่ง','ส่งถึง','ช่องทาง','วันที่ส่ง','เวลา','กำหนดตอบ','สถานะ','วันทำการ','วันที่ปิดงาน','จำนวนติดตาม','ลิงก์เอกสาร','หมายเหตุ'];
+  const rows=docs.map(d=>[d.no,d.name,d.type,d.factory||'',d.sender,d.to,d.channel,d.date,d.time,d.due||'',STATUS[effStatus(d)][0],agingDays(d),d.closedAt||'',(d.logs||[]).length,d.link||'',d.note||'']);
   const csv='\uFEFF'+[head,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
